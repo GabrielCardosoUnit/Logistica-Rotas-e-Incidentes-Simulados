@@ -1,0 +1,462 @@
+{
+ "Universidade Tiradentes, Aracaju": [
+  {
+   "place_id": 14961398,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "relation",
+   "osm_id": 3949801,
+   "lat": "-10.9684319",
+   "lon": "-37.0612574",
+   "category": "amenity",
+   "type": "university",
+   "place_rank": 30,
+   "importance": 0.2659205816262254,
+   "addresstype": "amenity",
+   "name": "Universidade Tiradentes",
+   "display_name": "Universidade Tiradentes, 300, Avenida Murilo Dantas, Aningas, Farolândia, Aracaju, Sergipe, Região Nordeste, 49032-490, Brasil",
+   "boundingbox": [
+    "-10.9695915",
+    "-10.9652276",
+    "-37.0624348",
+    "-37.0571302"
+   ]
+  }
+ ],
+ "Shopping RioMar, Aracaju": [
+  {
+   "place_id": 14923412,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 88268799,
+   "lat": "-10.9454348",
+   "lon": "-37.0477949",
+   "category": "shop",
+   "type": "mall",
+   "place_rank": 30,
+   "importance": 0.25352702198722055,
+   "addresstype": "shop",
+   "name": "Shopping Riomar",
+   "display_name": "Shopping Riomar, 400, Avenida Delmiro Golveia, Coroa do Meio, Aracaju, Sergipe, Região Nordeste, 49035-500, Brasil",
+   "boundingbox": [
+    "-10.9468384",
+    "-10.9440609",
+    "-37.0491984",
+    "-37.0468936"
+   ]
+  }
+ ],
+ "Shopping Jardins, Aracaju": [
+  {
+   "place_id": 14796924,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 82770149,
+   "lat": "-10.9430261",
+   "lon": "-37.0594901",
+   "category": "landuse",
+   "type": "retail",
+   "place_rank": 24,
+   "importance": 0.08006170519569693,
+   "addresstype": "retail",
+   "name": "Shopping Jardins",
+   "display_name": "Shopping Jardins, 215, Jardins, Aracaju, Sergipe, Região Nordeste, 49026-010, Brasil",
+   "boundingbox": [
+    "-10.9453789",
+    "-10.9406009",
+    "-37.0616532",
+    "-37.0572569"
+   ]
+  }
+ ],
+ "Aeroporto Internacional de Aracaju": [
+  {
+   "place_id": 382314050,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 1505292665,
+   "lat": "-10.9844047",
+   "lon": "-37.0724480",
+   "category": "aeroway",
+   "type": "aerodrome",
+   "place_rank": 30,
+   "importance": 0.4148860867684864,
+   "addresstype": "aeroway",
+   "name": "Aeroporto Internacional de Santa Maria",
+   "display_name": "Aeroporto Internacional de Santa Maria, Avenida Senador Júlio Cesár Leite, Santa Clara, Aeroporto, Aracaju, Sergipe, Região Nordeste, 49037-580, Brasil",
+   "boundingbox": [
+    "-10.9889022",
+    "-10.9802591",
+    "-37.0862282",
+    "-37.0586557"
+   ]
+  }
+ ],
+ "Rodoviária Nova Aracaju": [
+  {
+   "place_id": 14948286,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 82757116,
+   "lat": "-10.9166420",
+   "lon": "-37.0887377",
+   "category": "amenity",
+   "type": "bus_station",
+   "place_rank": 30,
+   "importance": 6.170519569691032e-05,
+   "addresstype": "amenity",
+   "name": "Rodoviária de Aracaju",
+   "display_name": "Rodoviária de Aracaju, Avenida Presidente Tancredo Neves, Capucho, Aracaju, Sergipe, Região Nordeste, 49095-840, Brasil",
+   "boundingbox": [
+    "-10.9174411",
+    "-10.9158139",
+    "-37.0893225",
+    "-37.0878023"
+   ]
+  }
+ ],
+ "Mercado Antônio Franco": [
+  {
+   "place_id": 14884523,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 193467602,
+   "lat": "-10.9073775",
+   "lon": "-37.0488298",
+   "category": "amenity",
+   "type": "marketplace",
+   "place_rank": 30,
+   "importance": 6.170519569691032e-05,
+   "addresstype": "amenity",
+   "name": "Mercado Municipal de Artesanato Antônio Franco",
+   "display_name": "Mercado Municipal de Artesanato Antônio Franco, Rua José do Prado Franco, Centro, Aracaju, Sergipe, Região Nordeste, 49010-110, Brasil",
+   "boundingbox": [
+    "-10.9076119",
+    "-10.9071433",
+    "-37.0490755",
+    "-37.0485841"
+   ]
+  }
+ ],
+ "Arcos da Orla de Atalaia, Aracaju": [
+  {
+   "place_id": 14950872,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "node",
+   "osm_id": 1362211619,
+   "lat": "-10.9888804",
+   "lon": "-37.0482133",
+   "category": "historic",
+   "type": "monument",
+   "place_rank": 30,
+   "importance": 0.22697289548003588,
+   "addresstype": "historic",
+   "name": "Arcos da Orla",
+   "display_name": "Arcos da Orla, Avenida Santos Dumont, Atalaia, Aracaju, Sergipe, Região Nordeste, 49037-550, Brasil",
+   "boundingbox": [
+    "-10.9889304",
+    "-10.9888304",
+    "-37.0482633",
+    "-37.0481633"
+   ]
+  }
+ ],
+ "Catedral Metropolitana de Aracaju": [
+  {
+   "place_id": 14893557,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 308501409,
+   "lat": "-10.9132965",
+   "lon": "-37.0516936",
+   "category": "building",
+   "type": "cathedral",
+   "place_rank": 30,
+   "importance": 0.27236747457604304,
+   "addresstype": "building",
+   "name": "Catedral Metropolitana de Aracaju",
+   "display_name": "Catedral Metropolitana de Aracaju, Praça Olímpio Campos, Centro, Aracaju, Sergipe, Região Nordeste, 49010-040, Brasil",
+   "boundingbox": [
+    "-10.9133971",
+    "-10.9131861",
+    "-37.0519088",
+    "-37.0514783"
+   ]
+  }
+ ],
+ "Parque da Sementeira, Aracaju": [
+  {
+   "place_id": 14918777,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 713152782,
+   "lat": "-10.9463521",
+   "lon": "-37.0541353",
+   "category": "leisure",
+   "type": "park",
+   "place_rank": 24,
+   "importance": 0.08006170519569693,
+   "addresstype": "park",
+   "name": "Parque da Sementeira",
+   "display_name": "Parque da Sementeira, Jardins, Aracaju, Sergipe, Região Nordeste, Brasil",
+   "boundingbox": [
+    "-10.9496212",
+    "-10.9431032",
+    "-37.0573575",
+    "-37.0512126"
+   ]
+  }
+ ],
+ "Estádio Lourival Baptista, Aracaju": [
+  {
+   "place_id": 14799557,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 95640732,
+   "lat": "-10.9270651",
+   "lon": "-37.0491114",
+   "category": "leisure",
+   "type": "stadium",
+   "place_rank": 30,
+   "importance": 0.4140681747297726,
+   "addresstype": "leisure",
+   "name": "Estádio Estadual Lourival Baptista",
+   "display_name": "Estádio Estadual Lourival Baptista, Rua Cedro, 13 de Julho, Aracaju, Sergipe, Região Nordeste, 49020-240, Brasil",
+   "boundingbox": [
+    "-10.9280238",
+    "-10.9260948",
+    "-37.0499081",
+    "-37.0483187"
+   ]
+  }
+ ],
+ "Oceanário de Aracaju": [
+  {
+   "place_id": 14734193,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 93284690,
+   "lat": "-10.9789425",
+   "lon": "-37.0409656",
+   "category": "tourism",
+   "type": "zoo",
+   "place_rank": 30,
+   "importance": 0.22697289548003588,
+   "addresstype": "tourism",
+   "name": "Oceanário de Aracaju",
+   "display_name": "Oceanário de Aracaju, Avenida Santos Dumont, Atalaia, Aracaju, Sergipe, Região Nordeste, 49035-730, Brasil",
+   "boundingbox": [
+    "-10.9791742",
+    "-10.9787095",
+    "-37.0412171",
+    "-37.0407437"
+   ]
+  }
+ ],
+ "Parque da Cidade, Aracaju": [
+  {
+   "place_id": 14930702,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 170174751,
+   "lat": "-10.8838785",
+   "lon": "-37.0556894",
+   "category": "leisure",
+   "type": "park",
+   "place_rank": 24,
+   "importance": 0.08006170519569693,
+   "addresstype": "park",
+   "name": "Parque da Cidade - Morro do Urubu",
+   "display_name": "Parque da Cidade - Morro do Urubu, Porto Dantas, Aracaju, Sergipe, Região Nordeste, Brasil",
+   "boundingbox": [
+    "-10.8913033",
+    "-10.8759625",
+    "-37.0624067",
+    "-37.0485369"
+   ]
+  }
+ ],
+ "Museu da Gente Sergipana, Aracaju": [
+  {
+   "place_id": 14903818,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "relation",
+   "osm_id": 12006554,
+   "lat": "-10.9174209",
+   "lon": "-37.0476108",
+   "category": "tourism",
+   "type": "museum",
+   "place_rank": 30,
+   "importance": 0.22898814784265079,
+   "addresstype": "tourism",
+   "name": "Museu da Gente Sergipana",
+   "display_name": "Museu da Gente Sergipana, Avenida Ivo do Prado, Centro, Aracaju, Sergipe, Região Nordeste, 49010-150, Brasil",
+   "boundingbox": [
+    "-10.9175796",
+    "-10.9172535",
+    "-37.0478213",
+    "-37.0473933"
+   ]
+  }
+ ],
+ "Hospital de Cirurgia, Aracaju": [
+  {
+   "place_id": 14899270,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 132483161,
+   "lat": "-10.9179534",
+   "lon": "-37.0591515",
+   "category": "amenity",
+   "type": "hospital",
+   "place_rank": 30,
+   "importance": 6.170519569691032e-05,
+   "addresstype": "amenity",
+   "name": "Hospital Cirurgia",
+   "display_name": "Hospital Cirurgia, Rua Permínio de Souza, Cirurgia, Aracaju, Sergipe, Região Nordeste, 49010-180, Brasil",
+   "boundingbox": [
+    "-10.9184954",
+    "-10.9173972",
+    "-37.0596927",
+    "-37.0586222"
+   ]
+  }
+ ],
+ "Distrito Industrial de Aracaju": [
+  {
+   "place_id": 14964125,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "node",
+   "osm_id": 5141420221,
+   "lat": "-10.9524095",
+   "lon": "-37.0745425",
+   "category": "place",
+   "type": "neighbourhood",
+   "place_rank": 24,
+   "importance": 0.08006170519569693,
+   "addresstype": "neighbourhood",
+   "name": "Distrito Industrial de Aracaju",
+   "display_name": "Distrito Industrial de Aracaju, Inácio Barbosa, Aracaju, Sergipe, Região Nordeste, 49025-620, Brasil",
+   "boundingbox": [
+    "-10.9624095",
+    "-10.9424095",
+    "-37.0845425",
+    "-37.0645425"
+   ]
+  }
+ ],
+ "Ponte Construtor João Alves, Aracaju": [
+  {
+   "place_id": 14924122,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 81735441,
+   "lat": "-10.8949775",
+   "lon": "-37.0440552",
+   "category": "highway",
+   "type": "primary",
+   "place_rank": 26,
+   "importance": 0.053383334859235486,
+   "addresstype": "primary",
+   "name": "Ponte Construtor João Alves",
+   "display_name": "Ponte Construtor João Alves, Industrial, Aracaju, Sergipe, Região Nordeste, 49066-460, Brasil",
+   "boundingbox": [
+    "-10.8963657",
+    "-10.8947512",
+    "-37.0517113",
+    "-37.0365201"
+   ]
+  }
+ ],
+ "Colina de Santo Antônio, Aracaju": [
+  {
+   "place_id": 14916819,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "node",
+   "osm_id": 1739580946,
+   "lat": "-10.8964683",
+   "lon": "-37.0593523",
+   "category": "tourism",
+   "type": "information",
+   "place_rank": 30,
+   "importance": 6.170519569691032e-05,
+   "addresstype": "tourism",
+   "name": "Colina do Santo Antônio",
+   "display_name": "Colina do Santo Antônio, Rua Claudio Batista, Sanatório, Santo Antônio, Aracaju, Sergipe, Região Nordeste, 49060-470, Brasil",
+   "boundingbox": [
+    "-10.8965183",
+    "-10.8964183",
+    "-37.0594023",
+    "-37.0593023"
+   ]
+  }
+ ],
+ "Hospital Universitário Aracaju": [
+  {
+   "place_id": 14974758,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 162012831,
+   "lat": "-10.8935903",
+   "lon": "-37.0647248",
+   "category": "building",
+   "type": "hospital",
+   "place_rank": 30,
+   "importance": 6.170519569691032e-05,
+   "addresstype": "building",
+   "name": "Hospital Universitário",
+   "display_name": "Hospital Universitário, Acesso ao Almoxarifado, Palestina, Aracaju, Sergipe, Região Nordeste, 49060-108, Brasil",
+   "boundingbox": [
+    "-10.8939291",
+    "-10.8932247",
+    "-37.0649968",
+    "-37.0644520"
+   ]
+  }
+ ],
+ "Hospital São Lucas Aracaju": [
+  {
+   "place_id": 14940253,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 96303872,
+   "lat": "-10.9244660",
+   "lon": "-37.0521035",
+   "category": "amenity",
+   "type": "hospital",
+   "place_rank": 30,
+   "importance": 6.170519569691032e-05,
+   "addresstype": "amenity",
+   "name": "Hospital São Lucas",
+   "display_name": "Hospital São Lucas, Rua Alcides Leite, São José, Aracaju, Sergipe, Região Nordeste, 49015-300, Brasil",
+   "boundingbox": [
+    "-10.9247878",
+    "-10.9241434",
+    "-37.0524551",
+    "-37.0517654"
+   ]
+  }
+ ],
+ "Hospital de Urgência de Sergipe, Aracaju": [
+  {
+   "place_id": 14727575,
+   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+   "osm_type": "way",
+   "osm_id": 83376511,
+   "lat": "-10.9143753",
+   "lon": "-37.0902982",
+   "category": "amenity",
+   "type": "hospital",
+   "place_rank": 30,
+   "importance": 6.170519569691032e-05,
+   "addresstype": "amenity",
+   "name": "Hospital de Urgência de Sergipe",
+   "display_name": "Hospital de Urgência de Sergipe, 7501, Avenida Presidente Tancredo Neves, Capucho, Aracaju, Sergipe, Região Nordeste, 49081-020, Brasil",
+   "boundingbox": [
+    "-10.9159096",
+    "-10.9128655",
+    "-37.0917867",
+    "-37.0891017"
+   ]
+  }
+ ]
+}

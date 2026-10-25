@@ -1,0 +1,479 @@
+openapi: 3.0.3
+info:
+  title: Roteirização Logística — API mínima
+  version: 0.1.0
+  description: |
+    Microsserviço que calcula o menor caminho entre dois pontos de uma rede viária
+    **simulada** (Aracaju/SE) e recalcula quando uma via é bloqueada por um incidente.
+
+    Fluxo: importar a rede → calcular rota → registrar incidente → calcular de novo.
+
+    - As vias são de mão dupla; um incidente bloqueia os dois sentidos.
+    - Recalcular = chamar `POST /rotas` de novo com a mesma origem e destino.
+    - Os exemplos usam os dados de `dados/tratados/`.
+  license:
+    name: Ver arquivo LICENSE do repositório
+servers:
+  - url: http://localhost:8080
+    description: Execução local
+# MVP acadêmico executado localmente: nenhuma rota exige autenticação.
+security: []
+tags:
+  - name: Redes
+    description: Importação da rede de pontos e vias
+  - name: Rotas
+    description: Cálculo e consulta de rotas
+  - name: Incidentes
+    description: Bloqueio de vias
+
+paths:
+  /redes/importacoes:
+    post:
+      tags: [Redes]
+      summary: Importa pontos e vias a partir de CSV
+      description: |
+        Substitui a rede atual pela importada e incrementa `versaoRede`.
+        Linhas inválidas (campo ausente, peso ≤ 0, ponto inexistente, id duplicado)
+        são rejeitadas e listadas na resposta; as demais são importadas.
+      operationId: importarRede
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [pontos, vias]
+              properties:
+                pontos:
+                  type: string
+                  format: binary
+                  description: "CSV UTF-8 com cabeçalho `id,nome,latitude,longitude`"
+                vias:
+                  type: string
+                  format: binary
+                  description: "CSV UTF-8 com cabeçalho `id,origem,destino,distanciaKm,tempoMin,habilitada`"
+      responses:
+        "201":
+          description: Rede importada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportacaoResponse"
+              examples:
+                semRejeicoes:
+                  summary: Importação completa
+                  value:
+                    versaoRede: 1
+                    pontosImportados: 20
+                    viasImportadas: 30
+                    linhasRejeitadas: []
+                comRejeicoes:
+                  summary: Duas linhas rejeitadas
+                  value:
+                    versaoRede: 2
+                    pontosImportados: 20
+                    viasImportadas: 28
+                    linhasRejeitadas:
+                      - arquivo: vias.csv
+                        linha: 5
+                        motivo: "distanciaKm deve ser maior que zero (valor: -1.2)."
+                      - arquivo: vias.csv
+                        linha: 12
+                        motivo: "Ponto de destino P99 não existe em pontos.csv."
+        "400":
+          description: Arquivo ausente, cabeçalho inválido ou nenhuma linha válida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 400
+                erro: VALIDACAO
+                campo: vias
+                mensagem: "Cabeçalho inválido em vias.csv. Esperado: id,origem,destino,distanciaKm,tempoMin,habilitada."
+        "503":
+          $ref: "#/components/responses/Indisponivel"
+
+  /rotas:
+    post:
+      tags: [Rotas]
+      summary: Calcula uma rota entre dois pontos
+      description: |
+        Executa Dijkstra com o critério informado, ignorando vias desabilitadas
+        ou com incidente ativo. A rota calculada é gravada e pode ser consultada
+        em `GET /rotas/{id}`.
+
+        - Sem caminho disponível: responde 201 com `status: SEM_CAMINHO`, listas
+          vazias e `mensagem` explicando o motivo (a tentativa fica registrada).
+        - Origem igual ao destino: responde 201 com um único ponto e totais zero.
+      operationId: calcularRota
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RotaRequest"
+            examples:
+              distancia:
+                summary: Rodoviária → UNIT por distância
+                value:
+                  origemId: P05
+                  destinoId: P01
+                  criterio: MENOR_DISTANCIA
+              tempo:
+                summary: Parque da Cidade → Arcos da Orla por tempo
+                value:
+                  origemId: P12
+                  destinoId: P07
+                  criterio: MENOR_TEMPO
+      responses:
+        "201":
+          description: Rota calculada (ou tentativa sem caminho registrada)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RotaResponse"
+              examples:
+                calculada:
+                  summary: Rodoviária → UNIT, menor distância
+                  value:
+                    id: 1
+                    origemId: P05
+                    destinoId: P01
+                    criterio: MENOR_DISTANCIA
+                    status: CALCULADA
+                    pontos: [P05, P15, P01]
+                    vias: [V14, V24]
+                    distanciaTotalKm: 8.5
+                    tempoTotalMin: 14.5
+                    versaoRede: 1
+                    mensagem: null
+                    calculadaEm: "2026-10-26T10:15:00-03:00"
+                recalculada:
+                  summary: Mesma rota depois de bloquear V24 (DIA–UNIT)
+                  value:
+                    id: 2
+                    origemId: P05
+                    destinoId: P01
+                    criterio: MENOR_DISTANCIA
+                    status: CALCULADA
+                    pontos: [P05, P15, P03, P01]
+                    vias: [V14, V23, V25]
+                    distanciaTotalKm: 11.7
+                    tempoTotalMin: 23.2
+                    versaoRede: 2
+                    mensagem: null
+                    calculadaEm: "2026-10-26T10:17:00-03:00"
+                semCaminho:
+                  summary: Arcos da Orla isolado (V29 e V30 bloqueadas)
+                  value:
+                    id: 3
+                    origemId: P05
+                    destinoId: P07
+                    criterio: MENOR_DISTANCIA
+                    status: SEM_CAMINHO
+                    pontos: []
+                    vias: []
+                    distanciaTotalKm: null
+                    tempoTotalMin: null
+                    versaoRede: 4
+                    mensagem: "Não há caminho disponível de P05 até P07. Vias bloqueadas: V29, V30."
+                    calculadaEm: "2026-10-26T10:20:00-03:00"
+        "400":
+          description: Campo ausente ou critério inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 400
+                erro: VALIDACAO
+                campo: criterio
+                mensagem: "Critério inválido. Use MENOR_DISTANCIA ou MENOR_TEMPO."
+        "404":
+          description: Ponto de origem ou destino inexistente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 404
+                erro: NAO_ENCONTRADO
+                campo: origemId
+                mensagem: "Ponto P99 não existe na rede. Importe a rede ou escolha outro ponto."
+        "503":
+          $ref: "#/components/responses/Indisponivel"
+
+  /rotas/{id}:
+    get:
+      tags: [Rotas]
+      summary: Consulta uma rota calculada
+      operationId: buscarRota
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        "200":
+          description: Rota encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RotaResponse"
+              example:
+                id: 1
+                origemId: P05
+                destinoId: P01
+                criterio: MENOR_DISTANCIA
+                status: CALCULADA
+                pontos: [P05, P15, P01]
+                vias: [V14, V24]
+                distanciaTotalKm: 8.5
+                tempoTotalMin: 14.5
+                versaoRede: 1
+                mensagem: null
+                calculadaEm: "2026-10-26T10:15:00-03:00"
+        "404":
+          description: Rota inexistente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 404
+                erro: NAO_ENCONTRADO
+                campo: id
+                mensagem: "Rota 42 não encontrada."
+        "503":
+          $ref: "#/components/responses/Indisponivel"
+
+  /incidentes:
+    post:
+      tags: [Incidentes]
+      summary: Bloqueia uma via
+      description: |
+        Registra um incidente ativo na via, que deixa de ser usada nos cálculos
+        (nos dois sentidos), e incrementa `versaoRede`.
+      operationId: registrarIncidente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IncidenteRequest"
+            example:
+              viaId: V24
+              descricao: Alagamento simulado na Av. Tancredo Neves
+      responses:
+        "201":
+          description: Incidente registrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidenteResponse"
+              example:
+                id: 1
+                viaId: V24
+                descricao: Alagamento simulado na Av. Tancredo Neves
+                ativo: true
+                registradoEm: "2026-10-26T10:16:00-03:00"
+                versaoRede: 2
+        "400":
+          description: Campo ausente ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 400
+                erro: VALIDACAO
+                campo: viaId
+                mensagem: "Informe a via a ser bloqueada."
+        "404":
+          description: Via inexistente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 404
+                erro: NAO_ENCONTRADO
+                campo: viaId
+                mensagem: "Via V99 não existe na rede."
+        "409":
+          description: Via já bloqueada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 409
+                erro: CONFLITO
+                campo: viaId
+                mensagem: "A via V24 já está bloqueada pelo incidente 1."
+        "503":
+          $ref: "#/components/responses/Indisponivel"
+
+components:
+  responses:
+    Indisponivel:
+      description: Dependência indisponível (por exemplo, banco de dados)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Erro"
+          example:
+            status: 503
+            erro: INDISPONIVEL
+            campo: null
+            mensagem: "Banco de dados indisponível. Tente novamente em instantes."
+
+  schemas:
+    Criterio:
+      type: string
+      enum: [MENOR_DISTANCIA, MENOR_TEMPO]
+      description: Peso usado pelo Dijkstra (distanciaKm ou tempoMin)
+
+    StatusRota:
+      type: string
+      enum: [CALCULADA, SEM_CAMINHO]
+
+    ImportacaoResponse:
+      type: object
+      required: [versaoRede, pontosImportados, viasImportadas, linhasRejeitadas]
+      properties:
+        versaoRede:
+          type: integer
+          description: Versão da rede após a importação
+        pontosImportados:
+          type: integer
+        viasImportadas:
+          type: integer
+        linhasRejeitadas:
+          type: array
+          items:
+            $ref: "#/components/schemas/LinhaRejeitada"
+
+    LinhaRejeitada:
+      type: object
+      required: [arquivo, linha, motivo]
+      properties:
+        arquivo:
+          type: string
+          enum: [pontos.csv, vias.csv]
+        linha:
+          type: integer
+          description: Número da linha no arquivo (cabeçalho = 1)
+        motivo:
+          type: string
+
+    RotaRequest:
+      type: object
+      required: [origemId, destinoId, criterio]
+      properties:
+        origemId:
+          type: string
+          example: P05
+        destinoId:
+          type: string
+          example: P01
+        criterio:
+          $ref: "#/components/schemas/Criterio"
+
+    RotaResponse:
+      type: object
+      required: [id, origemId, destinoId, criterio, status, pontos, vias, versaoRede, calculadaEm]
+      properties:
+        id:
+          type: integer
+          format: int64
+        origemId:
+          type: string
+        destinoId:
+          type: string
+        criterio:
+          $ref: "#/components/schemas/Criterio"
+        status:
+          $ref: "#/components/schemas/StatusRota"
+        pontos:
+          type: array
+          description: Ids dos pontos na ordem do percurso (vazio se SEM_CAMINHO)
+          items:
+            type: string
+        vias:
+          type: array
+          description: Ids das vias percorridas, na ordem (vazio se SEM_CAMINHO)
+          items:
+            type: string
+        distanciaTotalKm:
+          type: number
+          nullable: true
+          description: Soma das distâncias em km (null se SEM_CAMINHO)
+        tempoTotalMin:
+          type: number
+          nullable: true
+          description: Soma dos tempos em minutos (null se SEM_CAMINHO)
+        versaoRede:
+          type: integer
+          description: Versão da rede usada no cálculo
+        mensagem:
+          type: string
+          nullable: true
+          description: Explicação quando não há caminho
+        calculadaEm:
+          type: string
+          format: date-time
+
+    IncidenteRequest:
+      type: object
+      required: [viaId, descricao]
+      properties:
+        viaId:
+          type: string
+          example: V24
+        descricao:
+          type: string
+          minLength: 3
+          maxLength: 200
+          example: Alagamento simulado
+
+    IncidenteResponse:
+      type: object
+      required: [id, viaId, descricao, ativo, registradoEm, versaoRede]
+      properties:
+        id:
+          type: integer
+          format: int64
+        viaId:
+          type: string
+        descricao:
+          type: string
+        ativo:
+          type: boolean
+        registradoEm:
+          type: string
+          format: date-time
+        versaoRede:
+          type: integer
+
+    Erro:
+      type: object
+      required: [status, erro, mensagem]
+      description: Formato único de erro, gerado pelo @ControllerAdvice
+      properties:
+        status:
+          type: integer
+        erro:
+          type: string
+          enum: [VALIDACAO, NAO_ENCONTRADO, CONFLITO, INDISPONIVEL]
+        campo:
+          type: string
+          nullable: true
+          description: Campo que causou o erro, quando houver
+        mensagem:
+          type: string
+          description: O que está errado e como corrigir

@@ -141,7 +141,7 @@ roteirizacao-logistica/
 | Tipo                            | Papel                                                                                              | Conteúdo do PEA                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `Ponto`                         | Vértice da rede (`id`, `nome`, `latitude`, `longitude`)                                            | classes, encapsulamento, construtores, `equals`/`hashCode` por `id` |
-| `Via`                           | Aresta **direcionada** (`origem` → `destino`, `distanciaKm`, `tempoMin`, `habilitada`)             | validação no construtor (pesos > 0)                                 |
+| `Via`                           | Aresta de **mão dupla** (`origem` — `destino`, `distanciaKm`, `tempoMin`, `habilitada`)            | validação no construtor (pesos > 0)                                 |
 | `Grafo`                         | **TAD** que encapsula nós e arestas: `Map<String, Ponto>` + `Map<String, List<Via>>` (adjacências) | TAD, coleções, encapsulamento                                       |
 | `CriterioRota`                  | Contrato que define o peso de uma via                                                              | interfaces, polimorfismo                                            |
 | `MenorDistancia` / `MenorTempo` | Estratégias concretas de `CriterioRota`                                                            | polimorfismo, override                                              |
@@ -172,14 +172,14 @@ public Rota calcular(String origem, String destino, CriterioRota criterio) { ...
 
 ```csv
 id,nome,latitude,longitude
-P01,Centro de Distribuição,-19.9167,-43.9345
+P01,Universidade Tiradentes (UNIT) - Farolândia,-10.9684319,-37.0612574
 ```
 
 `dados/tratados/vias.csv`
 
 ```csv
 id,origem,destino,distanciaKm,tempoMin,habilitada
-V01,P01,P02,3.4,8,true
+V01,P12,P17,1.9,5.7,true
 ```
 
 | Campo                   | Tipo    | Unidade / regra                              |
@@ -189,7 +189,20 @@ V01,P01,P02,3.4,8,true
 | `tempoMin`              | decimal | minutos, **> 0**                             |
 | `habilitada`            | boolean | `false` = via fora de uso desde a importação |
 
-Cada via é **direcionada**. Uma via de mão dupla vira **duas linhas** no CSV.
+Cada via é de **mão dupla**: pode ser percorrida de `origem` para `destino` e no sentido inverso. Um incidente bloqueia os dois sentidos.
+
+### Rede utilizada: Aracaju/SE (simulada)
+
+- **20 pontos reais** de Aracaju (UNIT, Shopping RioMar, Shopping Jardins, aeroporto, rodoviária, hospitais, parques etc.), com coordenadas do **OpenStreetMap** (Nominatim). Fonte e data em [dados/brutos/FONTES.md](dados/brutos/FONTES.md).
+- **30 vias simuladas**: as ligações foram definidas pela equipe ([dados/brutos/ligacoes.csv](dados/brutos/ligacoes.csv)). Não reproduzem o traçado real das ruas.
+- Os pesos são **assumidos**, gerados por [dados/scripts/gerar_rede.py](dados/scripts/gerar_rede.py): distância em linha reta × 1,3 e tempo pela velocidade média do tipo de via (arterial 35 km/h, local 20 km/h).
+- Campos, tipos e origem de cada dado: [docs/dicionario-dados.md](docs/dicionario-dados.md).
+
+Para regenerar os CSVs tratados:
+
+```bash
+python dados/scripts/gerar_rede.py
+```
 
 ### Requisitos dos dados
 
@@ -203,7 +216,7 @@ Cada via é **direcionada**. Uma via de mão dupla vira **duas linhas** no CSV.
 
 ### Rede de validação (5 nós, resultado conhecido)
 
-Usada nos testes para conferir o Dijkstra com o resultado calculado à mão:
+Usada nos testes para conferir o Dijkstra com o resultado calculado à mão (vias de mão dupla, como na rede principal):
 
 | Via | Origem → Destino | km  | min |
 | --- | ---------------- | --- | --- |
@@ -238,35 +251,46 @@ Base: `http://localhost:8080`. O contrato completo, com exemplos, fica em [docs/
 
 Request:
 
+Rodoviária (P05) → UNIT (P01):
+
 ```json
-{ "origemId": "A", "destinoId": "E", "criterio": "MENOR_DISTANCIA" }
+{ "origemId": "P05", "destinoId": "P01", "criterio": "MENOR_DISTANCIA" }
 ```
 
 Response `201`:
 
 ```json
 {
-  "id": 12,
-  "origemId": "A",
-  "destinoId": "E",
+  "id": 1,
+  "origemId": "P05",
+  "destinoId": "P01",
   "criterio": "MENOR_DISTANCIA",
   "status": "CALCULADA",
-  "pontos": ["A", "B", "D", "E"],
-  "vias": ["V1", "V3", "V6"],
-  "distanciaTotalKm": 11.0,
-  "tempoTotalMin": 22.0,
-  "versaoRede": 3,
-  "mensagem": null
+  "pontos": ["P05", "P15", "P01"],
+  "vias": ["V14", "V24"],
+  "distanciaTotalKm": 8.5,
+  "tempoTotalMin": 14.5,
+  "versaoRede": 1,
+  "mensagem": null,
+  "calculadaEm": "2026-10-26T10:15:00-03:00"
 }
 ```
 
-Sem caminho: `status` vem como `"SEM_CAMINHO"`, as listas vêm vazias e `mensagem` traz algo como `"Não há caminho disponível de A até E. Vias bloqueadas: V5, V6."`.
+Sem caminho: `status` vem como `"SEM_CAMINHO"`, as listas vêm vazias, os totais vêm `null` e `mensagem` traz algo como `"Não há caminho disponível de P05 até P07. Vias bloqueadas: V29, V30."`.
+
+Origem igual ao destino: `201` com um único ponto e totais zero.
+
+### `POST /redes/importacoes`
+
+Substitui a rede atual e incrementa `versaoRede`. Linhas inválidas (peso ≤ 0, ponto inexistente, id duplicado) são **rejeitadas e listadas** na resposta (`linhasRejeitadas`); as demais são importadas.
 
 ### `POST /incidentes`
 
 ```json
-{ "viaId": "V3", "descricao": "Alagamento simulado" }
+{ "viaId": "V24", "descricao": "Alagamento simulado na Av. Tancredo Neves" }
 ```
+
+Depois desse incidente, a mesma rota Rodoviária → UNIT passa a ser `P05 → P15 → P03 → P01`, com 11,7 km.
 
 O incidente desabilita a via e incrementa a `versaoRede`. Para recalcular, a GUI chama `POST /rotas` de novo com a mesma origem e destino.
 
@@ -274,9 +298,9 @@ O incidente desabilita a via e incrementa a `versaoRede`. Para recalcular, a GUI
 
 | Código | Quando                                                                  |
 | ------ | ----------------------------------------------------------------------- |
-| `400`  | Validação (campo ausente, critério inválido, CSV mal formado, peso ≤ 0) |
+| `400`  | Validação (campo ausente, critério inválido, arquivo ausente, cabeçalho inválido) |
 | `404`  | Ponto, via ou rota inexistente                                          |
-| `409`  | Conflito (id duplicado na importação, via já bloqueada)                 |
+| `409`  | Conflito (via já bloqueada)                                             |
 | `503`  | Dependência indisponível (ex.: banco)                                   |
 
 Os erros seguem um formato único, gerado pelo `@ControllerAdvice`:
@@ -290,7 +314,7 @@ Os erros seguem um formato único, gerado pelo `@ControllerAdvice`:
 }
 ```
 
-> **A decidir pela equipe na semana 1:** se "sem caminho" responde `201` com `status: SEM_CAMINHO` (proposta acima, deixa a tentativa registrada) ou um código de erro. Registrar a decisão aqui.
+> **Proposta para congelar na semana 1:** "sem caminho" responde `201` com `status: SEM_CAMINHO`, deixando a tentativa registrada, em vez de um código de erro. Confirmar com o professor.
 
 ---
 
