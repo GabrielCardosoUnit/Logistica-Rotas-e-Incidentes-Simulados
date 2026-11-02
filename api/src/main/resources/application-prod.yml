@@ -1,0 +1,13 @@
+# Perfil de entrega: PostgreSQL. Valores vêm do .env (ver .env.example), nunca do repositório.
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/roteirizacao}
+    username: ${POSTGRES_USER:roteirizacao}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+rede:
+  carga-inicial:
+    habilitada: false

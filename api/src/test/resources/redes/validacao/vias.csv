@@ -1,0 +1,7 @@
+id,origem,destino,distanciaKm,tempoMin,habilitada
+V1,A,B,4,14,true
+V2,A,C,2,15,true
+V3,B,D,5,5,true
+V4,C,D,8,6,true
+V5,C,E,11,4,true
+V6,D,E,2,3,true

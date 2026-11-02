@@ -1,0 +1,5 @@
+id,nome,latitude,longitude
+A,Ponto A,-10.90,-37.05
+B,Ponto B,-10.91,-37.04
+A,Duplicado,-10.92,-37.06
+X,Latitude ruim,-200,-37.05

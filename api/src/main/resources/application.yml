@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: roteirizacao-api
+  profiles:
+    default: dev
+  jpa:
+    # Entidades são convertidas em DTO dentro dos serviços; nada de lazy loading na view.
+    open-in-view: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+
+rede:
+  # Fuso usado em "calculadaEm" e "registradoEm" nas respostas.
+  fuso-horario: America/Sao_Paulo
+  carga-inicial:
+    habilitada: false
+    pontos: ../dados/tratados/pontos.csv
+    vias: ../dados/tratados/vias.csv

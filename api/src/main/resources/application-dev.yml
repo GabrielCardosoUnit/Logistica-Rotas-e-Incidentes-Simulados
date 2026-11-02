@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:roteirizacao;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: true
+
+rede:
+  carga-inicial:
+    # Em dev a API sobe já com a rede de dados/tratados (caminho relativo ao módulo api/).
+    habilitada: true
