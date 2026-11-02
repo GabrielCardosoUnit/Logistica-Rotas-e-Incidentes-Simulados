@@ -23,8 +23,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!-- O módulo desktop (Swing) entra aqui quando for criado. -->
     <modules>
         <module>api</module>
+        <module>desktop</module>
     </modules>
 </project>
