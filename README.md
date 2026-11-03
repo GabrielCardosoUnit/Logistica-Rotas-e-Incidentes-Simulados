@@ -27,16 +27,14 @@ A rede é simulada e não representa trânsito nem a malha viária real.
 
 ## Equipe
 
-| Integrante    | GitHub              |
-| ------------- | ------------------- |
-| Alan          | @usuario            |
-| Brunno        | @usuario            |
-| Gabriel       | @GabrielCardosoUnit |
-| Isadora Matos | @usuario            |
-| Jarlisson     | @usuario            |
-| Luiz          | @usuario            |
-
-A contribuição de cada integrante fica registrada em [docs/registros-semanais.md](docs/registros-semanais.md).
+|  Integrante           | GitHub              |
+| --------------------- | ------------------- |
+| Alan Oliveira         | @usuario            |
+| Brunno Passos         | @usuario            |
+| Gabriel Oliveira      | @GabrielCardosoUnit |
+| Isadora Matos         | @misabm             |
+| Jarlisson Brito       | @usuario            |
+| Luiz Gustavo Oliveira | @usuario            |
 
 ---
 
