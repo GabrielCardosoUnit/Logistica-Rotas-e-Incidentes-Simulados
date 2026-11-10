@@ -1,6 +1,7 @@
 package com.logistica.roteirizacao.model;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -83,7 +84,8 @@ public class RotaCalculada {
         this.criterio = Objects.requireNonNull(criterio);
         this.status = Objects.requireNonNull(status);
         this.versaoRede = versaoRede;
-        this.calculadaEm = Objects.requireNonNull(calculadaEm);
+        // O banco guarda microssegundos; sem truncar, o POST e o GET da mesma rota divergiam.
+        this.calculadaEm = Objects.requireNonNull(calculadaEm).truncatedTo(ChronoUnit.MICROS);
     }
 
     public static RotaCalculada calculada(TipoCriterio criterio, Rota rota, int versaoRede, Instant instante) {

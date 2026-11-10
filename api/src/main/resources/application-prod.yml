@@ -1,7 +1,11 @@
 # Perfil de entrega: PostgreSQL. Valores vêm do .env (ver .env.example), nunca do repositório.
 spring:
+  config:
+    # O Spring não lê .env sozinho. "./" vale para o jar rodado na raiz do repositório e "../"
+    # para o spring-boot:run, que roda dentro de api/. Variáveis de ambiente do sistema têm prioridade.
+    import: "optional:file:./.env[.properties],optional:file:../.env[.properties]"
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/roteirizacao}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:roteirizacao}}
     username: ${POSTGRES_USER:roteirizacao}
     password: ${POSTGRES_PASSWORD}
   jpa:

@@ -1,0 +1,31 @@
+# PostgreSQL para o perfil prod da API.
+#
+#   cp .env.example .env        (e troque a senha no .env)
+#   docker compose up -d
+#   ./mvnw -pl api spring-boot:run -Dspring-boot.run.profiles=prod
+#
+# O Docker Compose lê o .env desta pasta. Os dados ficam no volume "dados-postgres";
+# para começar do zero: docker compose down -v
+name: roteirizacao-logistica
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: roteirizacao-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-roteirizacao}
+      POSTGRES_USER: ${POSTGRES_USER:-roteirizacao}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env (copie o .env.example)}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - dados-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  dados-postgres:

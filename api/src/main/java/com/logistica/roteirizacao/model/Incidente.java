@@ -1,6 +1,7 @@
 package com.logistica.roteirizacao.model;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -45,7 +46,9 @@ public class Incidente {
             throw new IllegalArgumentException("descrição do incidente é obrigatória.");
         }
         this.descricao = descricao.strip();
-        this.registradoEm = Objects.requireNonNull(registradoEm, "instante do incidente é obrigatório.");
+        // Mesma precisão do banco (microssegundos), como em RotaCalculada.
+        this.registradoEm = Objects.requireNonNull(registradoEm, "instante do incidente é obrigatório.")
+                .truncatedTo(ChronoUnit.MICROS);
         this.ativo = true;
     }
 

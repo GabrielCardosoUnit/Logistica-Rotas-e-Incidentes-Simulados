@@ -75,8 +75,8 @@ Restrições do projeto:
 roteirizacao-logistica/
 ├── pom.xml                          # pom pai (módulos api e desktop)
 ├── mvnw, mvnw.cmd, .mvn/            # Maven Wrapper
-├── compose.yaml                     # PostgreSQL para o perfil prod (a criar)
-├── .env.example                     # variáveis de ambiente, sem senhas reais (a criar)
+├── compose.yaml                     # PostgreSQL para o perfil prod
+├── .env.example                     # variáveis de ambiente, sem senhas reais
 ├── README.md
 ├── api/
 │   ├── pom.xml
@@ -328,6 +328,11 @@ Se o arquivo estiver corrompido, a tela avisa, usa os valores padrão e regrava 
 | 8   | Integração       | CSV inexistente e falha de conexão com o banco são tratados          | feito    |
 | 9   | REST             | `POST /rotas` retorna `201` e `GET /rotas/{id}` devolve a mesma rota | feito    |
 | 10  | Regra            | Sem caminho gera `SEM_CAMINHO` com mensagem                          | feito    |
+| 11  | REST             | Horário de `POST` e `GET` da mesma rota é igual, em microssegundos (`HorarioRespostaTest`) | feito |
+
+### Teste de uso com outra equipe
+
+Roteiro, tarefas, fichas de observação e registro das melhorias em [docs/teste-usabilidade.md](docs/teste-usabilidade.md). Situação: _[a agendar até 13/11]_.
 
 ---
 
@@ -389,16 +394,25 @@ Se a porta 8080 estiver ocupada, suba a API em outra porta e aponte o cliente pa
 ./mvnw -pl desktop compile exec:java "-Dexec.args=http://localhost:8081"
 ```
 
+### Perfil `prod` (PostgreSQL)
+
 Variáveis de ambiente (`.env.example`, sem senhas reais):
 
 ```dotenv
 POSTGRES_DB=roteirizacao
 POSTGRES_USER=roteirizacao
-POSTGRES_PASSWORD=troque-me
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/roteirizacao
+POSTGRES_PASSWORD=troque-esta-senha
+POSTGRES_PORT=5432
 ```
 
-O `.env` real não vai para o repositório. O `compose.yaml` e o `.env.example` ainda não foram criados, então o perfil `prod` fica para a próxima etapa.
+- O `.env` é lido pelo Docker Compose e pela API. O Spring não lê `.env` sozinho, por isso o `application-prod.yml` o importa com `spring.config.import`.
+- O `.env` real não vai para o repositório (está no `.gitignore`).
+- Sem `POSTGRES_PASSWORD`, o `docker compose up` para com uma mensagem pedindo para criar o `.env`.
+- Se a porta 5432 já estiver em uso (por exemplo, por um PostgreSQL instalado na máquina), mude `POSTGRES_PORT` no `.env`. A API usa o mesmo valor.
+- Para apontar para outro banco, defina `SPRING_DATASOURCE_URL` (no `.env` ou como variável de ambiente).
+- No Windows (PowerShell), troque `cp` por `copy`.
+
+No perfil `prod` a API sobe **sem** a rede carregada: importe pela tela (botão **Importar rede**). As tabelas são criadas na primeira subida (`ddl-auto: update`), e os dados ficam no volume do Docker entre reinícios. Para começar do zero: `docker compose down -v`.
 
 ### Cliente desktop
 
