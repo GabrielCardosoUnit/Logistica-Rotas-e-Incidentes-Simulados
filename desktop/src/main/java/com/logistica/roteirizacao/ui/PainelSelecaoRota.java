@@ -185,6 +185,31 @@ public class PainelSelecaoRota extends JPanel {
         return rbTempo.isSelected() ? Criterio.MENOR_TEMPO : Criterio.MENOR_DISTANCIA;
     }
 
+    /** Usado ao recuperar o critério padrão do config.bin. */
+    public void setCriterio(Criterio criterio) {
+        (criterio == Criterio.MENOR_TEMPO ? rbTempo : rbDistancia).setSelected(true);
+    }
+
+    /**
+     * Seleciona origem e destino pelos ids (por exemplo, a última rota guardada no config.bin).
+     * Ids que não existem na rede importada são ignorados. Devolve true se os dois foram achados.
+     */
+    public boolean selecionar(String origemId, String destinoId) {
+        boolean achouOrigem = selecionarNoCombo(comboOrigem, origemId);
+        boolean achouDestino = selecionarNoCombo(comboDestino, destinoId);
+        return achouOrigem && achouDestino;
+    }
+
+    private static boolean selecionarNoCombo(JComboBox<PontoRede> combo, String id) {
+        for (int i = 1; i < combo.getItemCount(); i++) {
+            if (combo.getItemAt(i).getId().equals(id)) {
+                combo.setSelectedIndex(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void addCalcularListener(ActionListener l) {
         btnCalcular.addActionListener(l);
     }

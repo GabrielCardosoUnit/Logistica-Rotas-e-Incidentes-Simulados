@@ -18,6 +18,9 @@ public final class Mensagens {
     public static final String ESCOLHER_DESTINO = "Selecione um ponto de destino.";
     public static final String DESTINO_IGUAL_ORIGEM = "Selecione um ponto de destino diferente da origem.";
     public static final String IMPORTAR_ANTES = "Importe a rede (pontos.csv e vias.csv) antes de calcular.";
+    public static final String ESCOLHER_VIA = "Selecione a via a bloquear.";
+    public static final String DESCRICAO_INCIDENTE = "Descreva o incidente com 3 a 200 caracteres.";
+    public static final String CALCULAR_ANTES_DE_EXPORTAR = "Calcule uma rota com caminho antes de exportar.";
 
     private static final Locale PT_BR = Locale.forLanguageTag("pt-BR");
     private static final DateTimeFormatter DATA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");

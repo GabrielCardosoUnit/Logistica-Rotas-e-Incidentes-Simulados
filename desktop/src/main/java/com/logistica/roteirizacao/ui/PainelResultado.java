@@ -3,11 +3,15 @@ package com.logistica.roteirizacao.ui;
 import com.logistica.roteirizacao.client.dto.RotaResultado;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -27,6 +31,7 @@ public class PainelResultado extends JPanel {
     private final JTextArea txtMensagem = new JTextArea(2, 40);
     private final DefaultListModel<String> passos = new DefaultListModel<>();
     private final JList<String> listaPassos = new JList<>(passos);
+    private final JButton btnExportar = new JButton("Exportar CSV…");
 
     public PainelResultado() {
         setBorder(BorderFactory.createTitledBorder("3. Resultado"));
@@ -51,9 +56,15 @@ public class PainelResultado extends JPanel {
         listaPassos.getAccessibleContext().setAccessibleName("Pontos do percurso, na ordem");
         JScrollPane rolagem = new JScrollPane(listaPassos);
 
+        btnExportar.setMnemonic(KeyEvent.VK_E);
+        btnExportar.setToolTipText("Salva a rota calculada (pontos na ordem, vias e totais) em um arquivo CSV");
+        JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        acoes.add(btnExportar);
+
         JPanel rodape = new JPanel(new BorderLayout());
         rodape.add(lblVias, BorderLayout.NORTH);
         rodape.add(txtMensagem, BorderLayout.CENTER);
+        rodape.add(acoes, BorderLayout.SOUTH);
 
         add(topo, BorderLayout.NORTH);
         add(rolagem, BorderLayout.CENTER);
@@ -70,7 +81,19 @@ public class PainelResultado extends JPanel {
         lblVias.setText(" ");
         txtMensagem.setText("");
         passos.clear();
+        btnExportar.setEnabled(false);
     }
+
+    /** O botão Exportar só fica ativo quando há uma rota com caminho na tela. */
+    public void setExportavel(boolean exportavel) {
+        btnExportar.setEnabled(exportavel);
+    }
+
+    public void addExportarListener(ActionListener l) {
+        btnExportar.addActionListener(l);
+    }
+
+    JButton getBotaoExportar() { return btnExportar; }
 
     public void mostrarCalculando() {
         limpar();

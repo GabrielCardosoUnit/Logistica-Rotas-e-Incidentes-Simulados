@@ -17,9 +17,11 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
@@ -43,6 +45,7 @@ public class PainelMapa extends JPanel {
     private final List<PontoRede> pontos = new ArrayList<>();
     private final List<ViaRede> vias = new ArrayList<>();
     private final List<String> rota = new ArrayList<>();
+    private final Set<String> viasComIncidente = new HashSet<>();
 
     public PainelMapa() {
         setBorder(BorderFactory.createTitledBorder("Mapa esquemático"));
@@ -59,7 +62,18 @@ public class PainelMapa extends JPanel {
         vias.clear();
         vias.addAll(novasVias);
         rota.clear();
+        viasComIncidente.clear(); // reimportar a rede apaga os incidentes na API
         repaint();
+    }
+
+    /** Desenha a via como bloqueada (tracejada) depois de um incidente registrado na API. */
+    public void marcarViaBloqueada(String viaId) {
+        viasComIncidente.add(viaId);
+        repaint();
+    }
+
+    boolean estaBloqueada(ViaRede via) {
+        return !via.isHabilitada() || viasComIncidente.contains(via.getId());
     }
 
     /** Destaca a rota: ids dos pontos na ordem do percurso. */
@@ -148,7 +162,7 @@ public class PainelMapa extends JPanel {
             if (a == null || b == null) {
                 continue;
             }
-            g2.setStroke(v.isHabilitada() ? TRACO_VIA : TRACO_VIA_BLOQUEADA);
+            g2.setStroke(estaBloqueada(v) ? TRACO_VIA_BLOQUEADA : TRACO_VIA);
             g2.draw(new Line2D.Double(a, b));
         }
     }

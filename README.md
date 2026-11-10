@@ -27,16 +27,7 @@ A rede é simulada e não representa trânsito nem a malha viária real.
 
 ## Equipe
 
-|  Integrante           | GitHub              |
-| --------------------- | ------------------- |
-| Alan Oliveira         | @usuario            |
-| Brunno Passos         | @usuario            |
-| Gabriel Oliveira      | @GabrielCardosoUnit |
-| Isadora Matos         | @misabm             |
-| Jarlisson Brito       | @usuario            |
-| Luiz Gustavo Oliveira | @usuario            |
-
----
+Alan Oliveira Silva Júnior, Brunno Passos da Vitória, Gabriel Oliveira Cardoso, Isadora Matos Bispo, Jarlisson Brito, Luiz Gustavo de Oliveira
 
 ## Escopo
 
@@ -59,16 +50,16 @@ Ficam de fora a roteirização de várias entregas, APIs de mapas ou de trânsit
 
 ## Tecnologias
 
-| Item                | Escolha                                                                       |
-| ------------------- | ----------------------------------------------------------------------------- |
-| Java                | 17                                                                            |
-| Build               | Maven com Maven Wrapper (`mvnw`), projeto multimódulo                         |
-| Framework           | Spring Boot 3.5.x                                                             |
-| Dependências da API | Spring Web, Validation, Data JPA                                              |
-| Banco               | H2 nos perfis `dev` e `test`; PostgreSQL no perfil de entrega (`prod`)        |
-| GUI                 | Swing e `java.net.http.HttpClient`                                            |
-| Testes              | JUnit 5 (com `spring-boot-starter-test`)                                      |
-| Containers          | `compose.yaml` para subir o PostgreSQL                                        |
+| Item                | Escolha                                                                |
+| ------------------- | ---------------------------------------------------------------------- |
+| Java                | 17                                                                     |
+| Build               | Maven com Maven Wrapper (`mvnw`), projeto multimódulo                  |
+| Framework           | Spring Boot 3.5.x                                                      |
+| Dependências da API | Spring Web, Validation, Data JPA                                       |
+| Banco               | H2 nos perfis `dev` e `test`; PostgreSQL no perfil de entrega (`prod`) |
+| GUI                 | Swing e `java.net.http.HttpClient`                                     |
+| Testes              | JUnit 5 (com `spring-boot-starter-test`)                               |
+| Containers          | `compose.yaml` para subir o PostgreSQL                                 |
 
 Restrições do projeto:
 
@@ -104,6 +95,7 @@ roteirizacao-logistica/
 │   ├── pom.xml
 │   └── src/main/java/com/logistica/roteirizacao/
 │       ├── client/                  # chamadas à API com HttpClient (e dto/)
+│       ├── files/                   # config.bin (binário) e exportação da rota em CSV
 │       └── ui/                      # telas Swing e mapa esquemático
 ├── docs/
 │   ├── openapi.yaml                 # contrato REST com exemplos
@@ -120,18 +112,18 @@ roteirizacao-logistica/
 
 ## Modelo de domínio
 
-| Tipo                            | Papel                                                                                              | Conteúdo do PEA                                                     |
-| ------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `Ponto`                         | Vértice da rede (`id`, `nome`, `latitude`, `longitude`)                                            | classes, encapsulamento, construtores, `equals`/`hashCode` por `id` |
-| `Via`                           | Aresta de mão dupla (`origem`, `destino`, `distanciaKm`, `tempoMin`, `habilitada`)                 | validação no construtor (pesos > 0)                                 |
-| `Grafo`                         | TAD que encapsula nós e arestas: `Map<String, Ponto>` e mapa de adjacências                        | TAD, coleções, encapsulamento                                       |
-| `CriterioRota`                  | Contrato que define o peso de uma via                                                              | interfaces, polimorfismo                                            |
-| `CriterioRotaBase`              | Classe abstrata com a validação comum dos critérios                                                | herança                                                             |
-| `MenorDistancia` / `MenorTempo` | Estratégias concretas, subclasses de `CriterioRotaBase`                                            | polimorfismo, override                                              |
-| `CalculadorRota`                | Dijkstra sobre o `Grafo` com um `CriterioRota`                                                     | métodos, passagem de parâmetros, overload                           |
-| `Rota`                          | Resultado: sequência de pontos, total, critério, status                                            | `toString`                                                          |
-| `Incidente`                     | Bloqueio de uma via (`viaId`, `descricao`, `instante`, `ativo`)                                    |                                                                     |
-| `CaminhoInexistenteException`   | Destino sem caminho disponível                                                                     | exceções                                                            |
+| Tipo                            | Papel                                                                              | Conteúdo do PEA                                                     |
+| ------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `Ponto`                         | Vértice da rede (`id`, `nome`, `latitude`, `longitude`)                            | classes, encapsulamento, construtores, `equals`/`hashCode` por `id` |
+| `Via`                           | Aresta de mão dupla (`origem`, `destino`, `distanciaKm`, `tempoMin`, `habilitada`) | validação no construtor (pesos > 0)                                 |
+| `Grafo`                         | TAD que encapsula nós e arestas: `Map<String, Ponto>` e mapa de adjacências        | TAD, coleções, encapsulamento                                       |
+| `CriterioRota`                  | Contrato que define o peso de uma via                                              | interfaces, polimorfismo                                            |
+| `CriterioRotaBase`              | Classe abstrata com a validação comum dos critérios                                | herança                                                             |
+| `MenorDistancia` / `MenorTempo` | Estratégias concretas, subclasses de `CriterioRotaBase`                            | polimorfismo, override                                              |
+| `CalculadorRota`                | Dijkstra sobre o `Grafo` com um `CriterioRota`                                     | métodos, passagem de parâmetros, overload                           |
+| `Rota`                          | Resultado: sequência de pontos, total, critério, status                            | `toString`                                                          |
+| `Incidente`                     | Bloqueio de uma via (`viaId`, `descricao`, `instante`, `ativo`)                    |                                                                     |
+| `CaminhoInexistenteException`   | Destino sem caminho disponível                                                     | exceções                                                            |
 
 ---
 
@@ -172,12 +164,12 @@ Para conferir o Dijkstra à mão, os testes usam uma rede pequena de 5 nós, com
 | V5  | C - E            | 11  | 4   |
 | V6  | D - E            | 2   | 3   |
 
-| Cenário (A até E)                    | Rota esperada | Total         |
-| ------------------------------------ | ------------- | ------------- |
-| Menor distância                      | A, B, D, E    | 11 km         |
-| Menor tempo                          | A, C, E       | 19 min        |
-| Menor distância com V3 bloqueada     | A, C, D, E    | 12 km         |
-| V5 e V6 bloqueadas                   | sem caminho   | `SEM_CAMINHO` |
+| Cenário (A até E)                | Rota esperada | Total         |
+| -------------------------------- | ------------- | ------------- |
+| Menor distância                  | A, B, D, E    | 11 km         |
+| Menor tempo                      | A, C, E       | 19 min        |
+| Menor distância com V3 bloqueada | A, C, D, E    | 12 km         |
+| V5 e V6 bloqueadas               | sem caminho   | `SEM_CAMINHO` |
 
 ---
 
@@ -235,15 +227,15 @@ O incidente desabilita a via e incrementa a `versaoRede`. Depois dele, a mesma r
 
 ### Erros
 
-| Código | Quando                                                                          |
-| ------ | ------------------------------------------------------------------------------- |
+| Código | Quando                                                                                    |
+| ------ | ----------------------------------------------------------------------------------------- |
 | `400`  | Campo ausente, critério inválido, JSON mal formado, arquivo ausente ou cabeçalho inválido |
-| `404`  | Ponto, via ou rota inexistente                                                  |
-| `405`  | Método HTTP não permitido                                                       |
-| `409`  | Conflito, por exemplo via já bloqueada                                          |
-| `415`  | Tipo de conteúdo não suportado                                                  |
-| `500`  | Erro inesperado no servidor                                                     |
-| `503`  | Banco de dados indisponível                                                     |
+| `404`  | Ponto, via ou rota inexistente                                                            |
+| `405`  | Método HTTP não permitido                                                                 |
+| `409`  | Conflito, por exemplo via já bloqueada                                                    |
+| `415`  | Tipo de conteúdo não suportado                                                            |
+| `500`  | Erro inesperado no servidor                                                               |
+| `503`  | Banco de dados indisponível                                                               |
 
 Todos os erros seguem o mesmo formato, gerado pelo `@ControllerAdvice`:
 
@@ -267,11 +259,11 @@ Duas regras do domínio:
 
 Três cenários que o sistema precisa tratar:
 
-| Cenário | Exemplo                                                                |
-| ------- | ---------------------------------------------------------------------- |
-| Normal  | A até E por distância retorna A, B, D, E, com 11 km                    |
-| Limite  | Origem igual ao destino; empate entre caminhos; via de peso mínimo     |
-| Falha   | Destino sem caminho; CSV com peso negativo; ponto inexistente          |
+| Cenário | Exemplo                                                            |
+| ------- | ------------------------------------------------------------------ |
+| Normal  | A até E por distância retorna A, B, D, E, com 11 km                |
+| Limite  | Origem igual ao destino; empate entre caminhos; via de peso mínimo |
+| Falha   | Destino sem caminho; CSV com peso negativo; ponto inexistente      |
 
 Em rede pequena o resultado confere com o cálculo manual, bloquear uma via da rota muda a rota recalculada, e os dois critérios dão rotas diferentes na rede de validação.
 
@@ -279,11 +271,22 @@ Em rede pequena o resultado confere com o cálculo manual, bloquear uma via da r
 
 ## Arquivos texto e binário
 
-| Tipo          | Uso                                                                                  | Classe                | Situação |
-| ------------- | ------------------------------------------------------------------------------------ | --------------------- | -------- |
-| CSV (entrada) | Importar `pontos.csv` e `vias.csv`, validar o cabeçalho e listar as linhas rejeitadas | `ImportadorRedeCsv`   | feito    |
-| CSV (saída)   | Exportar a rota calculada (sequência de pontos e totais)                             | `ExportadorRotaCsv`   | a fazer  |
-| Binário       | `config.bin` com as configurações da sessão, via `DataOutputStream` e `DataInputStream` | `ConfiguracaoBinaria` | a fazer  |
+| Tipo          | Uso                                                                                            | Classe                          | Situação |
+| ------------- | ---------------------------------------------------------------------------------------------- | ------------------------------- | -------- |
+| CSV (entrada) | Importar `pontos.csv` e `vias.csv`, validar o cabeçalho e listar as linhas rejeitadas          | `ImportadorRedeCsv`             | feito    |
+| CSV (saída)   | Exportar a rota calculada (sequência de pontos e totais), botão **Exportar CSV…** no Resultado | `ExportadorRotaCsv` (desktop)   | feito    |
+| Binário       | `config.bin` com as configurações da sessão, via `DataOutputStream` e `DataInputStream`        | `ConfiguracaoBinaria` (desktop) | feito    |
+
+O CSV exportado tem uma linha por ponto do percurso, na ordem. Os dados da rota se repetem em cada linha:
+
+```csv
+rotaId,criterio,ordem,pontoId,pontoNome,viaChegadaId,distanciaTotalKm,tempoTotalMin,versaoRede,calculadaEm
+1,MENOR_DISTANCIA,1,P05,Rodoviária de Aracaju,,8.5,14.5,1,2026-11-10T10:15-03:00
+1,MENOR_DISTANCIA,2,P15,Distrito Industrial de Aracaju (DIA),V14,8.5,14.5,1,2026-11-10T10:15-03:00
+1,MENOR_DISTANCIA,3,P01,Universidade Tiradentes (UNIT) - Farolândia,V24,8.5,14.5,1,2026-11-10T10:15-03:00
+```
+
+`viaChegadaId` é a via usada para chegar ao ponto (vazia no primeiro). Campos com vírgula ou aspas vão entre aspas.
 
 O `config.bin` guarda só parâmetros, nunca os registros do domínio:
 
@@ -296,6 +299,14 @@ O `config.bin` guarda só parâmetros, nunca os registros do domínio:
 | 5     | `UTF` | URL base da API                                |
 
 Arquivo ausente, truncado, com versão não suportada ou com valores inválidos gera um erro tratado.
+
+O `config.bin` fica na pasta em que o desktop é iniciado (a raiz do repositório) e está no `.gitignore`. Ele é lido ao abrir a janela e gravado a cada rota calculada e ao fechar. Para demonstrar:
+
+1. Calcule uma rota por menor tempo e feche a janela.
+2. Abra de novo: a barra de status mostra as preferências recuperadas.
+3. Importe a rede: o critério, a origem e o destino voltam preenchidos.
+
+Se o arquivo estiver corrompido, a tela avisa, usa os valores padrão e regrava o arquivo.
 
 ---
 
@@ -312,8 +323,8 @@ Arquivo ausente, truncado, com versão não suportada ou com valores inválidos 
 | 3   | Regra            | Com V3 bloqueada, a rota muda para A, C, D, E                        | feito    |
 | 4   | Entrada inválida | Via com peso menor ou igual a zero é rejeitada                       | feito    |
 | 5   | Entrada inválida | Ponto de origem inexistente gera `404`                               | feito    |
-| 6   | Arquivo          | Exportar e importar CSV mantém os dados                              | a fazer  |
-| 7   | Arquivo          | Gravar e ler `config.bin`; arquivo truncado gera erro tratado        | a fazer  |
+| 6   | Arquivo          | Exportar e importar CSV mantém os dados                              | feito    |
+| 7   | Arquivo          | Gravar e ler `config.bin`; arquivo truncado gera erro tratado        | feito    |
 | 8   | Integração       | CSV inexistente e falha de conexão com o banco são tratados          | feito    |
 | 9   | REST             | `POST /rotas` retorna `201` e `GET /rotas/{id}` devolve a mesma rota | feito    |
 | 10  | Regra            | Sem caminho gera `SEM_CAMINHO` com mensagem                          | feito    |
@@ -324,28 +335,28 @@ Arquivo ausente, truncado, com versão não suportada ou com valores inválidos 
 
 Onde cada conteúdo aparece no nosso código. Atualizar conforme o projeto avança.
 
-| Conteúdo                | Onde aparece                                                                                                   | Teste                                                    |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| POO e introdução a Java | `CalculadorRota` calcula sobre um `Grafo` usando um `CriterioRota`; os serviços usam repositórios e o domínio  | `CalculadorRotaTest`                                     |
-| Classes e objetos       | `Ponto`, `Via`, `Grafo`, `Rota`, `Incidente`                                                                   | `CalculadorRotaTest`                                     |
-| Encapsulamento          | Campos privados em `Ponto` e `Via`; `Grafo` esconde seus mapas e expõe operações                               | `viaComPesoNaoPositivoEhRecusada`                        |
-| Construtores            | `Via` valida os pesos ao ser criada; `PontoRede` (desktop) exige id e nome                                     | `viaComPesoNaoPositivoEhRecusada`                        |
-| Pacotes e acesso        | API em `controller`, `service`, `model`, `repository`, `dto`, `exception`, `files`; desktop em `client` e `ui` | -                                                        |
-| Métodos estáticos       | `Rota.arredondar`, `RotaCalculada.calculada` e `semCaminho`, `RotaResponse.de`; no desktop, `Mensagens` e `Desfecho.de` | `RotaControllerTest`                           |
-| Passagem de parâmetros  | `CalculadorRota.calcular(grafo, origemId, destinoId, criterio)` recebe tudo de forma explícita                 | `CalculadorRotaTest`                                     |
-| Herança                 | `CriterioRotaBase` com `MenorDistancia` e `MenorTempo`; `ApiException` com `ValidacaoException`, `ConflitoException` e `RecursoNaoEncontradoException` | `menorDistanciaDeAateE`, `menorTempoDeAateE` |
-| Programação por eventos | Botões Importar e Calcular em `JanelaPrincipal.ligarEventos`                                                   | demonstração manual                                      |
-| Interfaces e TADs       | Interface `CriterioRota`; `Grafo` como TAD (`adicionarPonto`, `adicionarVia`, `bloquearVia`); `ClienteApi` no desktop | `CalculadorRotaTest`                              |
-| Override                | `MenorDistancia` e `MenorTempo` sobrescrevem `pesoDe` e `descricao`; `toString` em várias classes              | `menorDistanciaDeAateE`                                  |
-| Polimorfismo            | `CalculadorRota` recebe um `CriterioRota` e funciona com qualquer estratégia                                   | `menorDistanciaDeAateE`, `menorTempoDeAateE`             |
-| Overload                | `CalculadorRota.calcular` com e sem critério (o padrão é menor distância)                                      | `criterioPadraoEhMenorDistancia`                         |
-| Classe Object           | `equals` e `hashCode` em `Ponto` e `Via`; `toString` em `Ponto`, `Via`, `Rota`, `Grafo` e `Incidente`          | -                                                        |
-| Exceções                | `TratadorErrosApi` (`@ControllerAdvice`) e `CaminhoInexistenteException`; no desktop, `ClienteApiException` e `Desfecho` | `rotaInexistenteGera404`, `falhaDeConexaoComOBancoGera503` |
-| Classe File             | `File.isFile()` em `PainelImportacao.validar`, `LeitorPontosCsv` e `LeitorViasCsv`                             | `ImportadorRedeCsvTest`                                  |
-| Arquivos texto          | `ImportadorRedeCsv` (API); `LeitorPontosCsv` e `LeitorViasCsv` (desktop). Exportação CSV a fazer               | `rejeitaLinhasInvalidasEImportaAsDemais`                 |
-| Arquivos binários       | `config.bin` a fazer                                                                                           | a fazer                                                  |
-| Coleções                | `Grafo` usa `Map`, `List` e `Set`; o desktop guarda os pontos em `Map<String, PontoRede>`                      | `CalculadorRotaTest`                                     |
-| GUI                     | Pacote `desktop/.../ui`: `JanelaPrincipal`, painéis de importação, seleção e resultado, e `PainelMapa`          | demonstração manual                                      |
+| Conteúdo                | Onde aparece                                                                                                                                           | Teste                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| POO e introdução a Java | `CalculadorRota` calcula sobre um `Grafo` usando um `CriterioRota`; os serviços usam repositórios e o domínio                                          | `CalculadorRotaTest`                                                        |
+| Classes e objetos       | `Ponto`, `Via`, `Grafo`, `Rota`, `Incidente`                                                                                                           | `CalculadorRotaTest`                                                        |
+| Encapsulamento          | Campos privados em `Ponto` e `Via`; `Grafo` esconde seus mapas e expõe operações                                                                       | `viaComPesoNaoPositivoEhRecusada`                                           |
+| Construtores            | `Via` valida os pesos ao ser criada; `PontoRede` (desktop) exige id e nome                                                                             | `viaComPesoNaoPositivoEhRecusada`                                           |
+| Pacotes e acesso        | API em `controller`, `service`, `model`, `repository`, `dto`, `exception`, `files`; desktop em `client` e `ui`                                         | -                                                                           |
+| Métodos estáticos       | `Rota.arredondar`, `RotaCalculada.calculada` e `semCaminho`, `RotaResponse.de`; no desktop, `Mensagens` e `Desfecho.de`                                | `RotaControllerTest`                                                        |
+| Passagem de parâmetros  | `CalculadorRota.calcular(grafo, origemId, destinoId, criterio)` recebe tudo de forma explícita                                                         | `CalculadorRotaTest`                                                        |
+| Herança                 | `CriterioRotaBase` com `MenorDistancia` e `MenorTempo`; `ApiException` com `ValidacaoException`, `ConflitoException` e `RecursoNaoEncontradoException` | `menorDistanciaDeAateE`, `menorTempoDeAateE`                                |
+| Programação por eventos | Botões Importar, Calcular, Bloquear via e Exportar CSV, e o fechamento da janela, em `JanelaPrincipal.ligarEventos`                                    | `JanelaPrincipalTest`                                                       |
+| Interfaces e TADs       | Interface `CriterioRota`; `Grafo` como TAD (`adicionarPonto`, `adicionarVia`, `bloquearVia`); `ClienteApi` no desktop                                  | `CalculadorRotaTest`                                                        |
+| Override                | `MenorDistancia` e `MenorTempo` sobrescrevem `pesoDe` e `descricao`; `toString` em várias classes                                                      | `menorDistanciaDeAateE`                                                     |
+| Polimorfismo            | `CalculadorRota` recebe um `CriterioRota` e funciona com qualquer estratégia                                                                           | `menorDistanciaDeAateE`, `menorTempoDeAateE`                                |
+| Overload                | `CalculadorRota.calcular` com e sem critério (o padrão é menor distância)                                                                              | `criterioPadraoEhMenorDistancia`                                            |
+| Classe Object           | `equals` e `hashCode` em `Ponto` e `Via`; `toString` em `Ponto`, `Via`, `Rota`, `Grafo` e `Incidente`                                                  | -                                                                           |
+| Exceções                | `TratadorErrosApi` (`@ControllerAdvice`) e `CaminhoInexistenteException`; no desktop, `ClienteApiException` e `Desfecho`                               | `rotaInexistenteGera404`, `falhaDeConexaoComOBancoGera503`                  |
+| Classe File             | `File.isFile()` em `PainelImportacao.validar`, `LeitorPontosCsv` e `LeitorViasCsv`                                                                     | `ImportadorRedeCsvTest`                                                     |
+| Arquivos texto          | `ImportadorRedeCsv` (API); `LeitorPontosCsv`, `LeitorViasCsv` e `ExportadorRotaCsv` (desktop)                                                          | `rejeitaLinhasInvalidasEImportaAsDemais`, `exportarELerMantemOsDadosDaRota` |
+| Arquivos binários       | `ConfiguracaoBinaria.salvar` e `ler` (`config.bin`, desktop)                                                                                           | `ConfiguracaoBinariaTest`                                                   |
+| Coleções                | `Grafo` usa `Map`, `List` e `Set`; o desktop guarda os pontos em `Map<String, PontoRede>`                                                              | `CalculadorRotaTest`                                                        |
+| GUI                     | Pacote `desktop/.../ui`: `JanelaPrincipal`, painéis de importação, seleção, incidente e resultado, e `PainelMapa`                                      | `JanelaPrincipalTest` e demonstração manual                                 |
 
 ---
 
