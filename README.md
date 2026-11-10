@@ -101,6 +101,8 @@ roteirizacao-logistica/
 │   ├── openapi.yaml                 # contrato REST com exemplos
 │   ├── dicionario-dados.md          # significado, tipo e unidade de cada campo
 │   ├── gui-telas-e-fluxo.md         # telas e fluxo do cliente desktop
+│   ├── diagrama-classes.md          # diagramas de classes (Mermaid); PNGs em diagramas/
+│   ├── teste-usabilidade.md         # roteiro do teste de uso com outra equipe
 │   └── registros-semanais.md
 └── dados/
     ├── brutos/                      # dados como foram obtidos ou gerados
@@ -111,6 +113,8 @@ roteirizacao-logistica/
 ---
 
 ## Modelo de domínio
+
+Diagramas de classes completos (domínio, camadas da API, erros e desktop): [docs/diagrama-classes.md](docs/diagrama-classes.md).
 
 | Tipo                            | Papel                                                                              | Conteúdo do PEA                                                     |
 | ------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
