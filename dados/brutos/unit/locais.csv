@@ -1,0 +1,14 @@
+id,nome,latitude,longitude,observacao
+U01,Portaria principal,-10.969044,-37.058882,
+U02,Bloco D,-10.967985,-37.058495,
+U03,Bloco A,-10.967538,-37.059869,
+U04,Bloco B,-10.967248,-37.060464,
+U05,Bloco C,-10.967006,-37.060877,
+U06,Bloco E/F,-10.966727,-37.061639,latitude informada sem o sinal (10.966727); corrigida para -10.966727
+U07,Coordenação,-10.967248,-37.061065,
+U08,Mini Shopping,-10.967016,-37.059895,
+U09,Bloco G,-10.966232,-37.061177,
+U10,Estacionamento,-10.969483,-37.059958,
+U11,Complexo de Comunicação Social,-10.965550,-37.061666,
+U12,Complexo de Especialidades em Saúde,-10.968101,-37.062061,
+U13,Portaria norte,-10.968077,-37.056672,nome padronizado (informado como Unit portaria norte)

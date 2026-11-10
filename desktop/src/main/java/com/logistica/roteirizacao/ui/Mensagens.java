@@ -46,9 +46,18 @@ public final class Mensagens {
         return base + " " + n + (n == 1 ? " linha rejeitada." : " linhas rejeitadas.");
     }
 
-    /** 8.5 -> "8,5 km"; null -> "—". */
+    /**
+     * 8.5 -> "8,5 km"; abaixo de 1 km mostra metros (0.33 -> "330 m"), para as rotas do campus;
+     * null -> "—".
+     */
     public static String km(Double valor) {
-        return valor == null ? "—" : String.format(PT_BR, "%.1f km", valor);
+        if (valor == null) {
+            return "—";
+        }
+        if (valor < 1.0) {
+            return String.format(PT_BR, "%.0f m", valor * 1000);
+        }
+        return String.format(PT_BR, "%.1f km", valor);
     }
 
     /** 14.5 -> "14,5 min"; null -> "—". */

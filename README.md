@@ -105,9 +105,9 @@ roteirizacao-logistica/
 │   ├── teste-usabilidade.md         # roteiro do teste de uso com outra equipe
 │   └── registros-semanais.md
 └── dados/
-    ├── brutos/                      # dados como foram obtidos ou gerados
-    ├── tratados/                    # pontos.csv e vias.csv prontos para importar
-    └── scripts/                     # gerar_rede.py
+    ├── brutos/                      # dados como foram obtidos (rede da cidade; unit/ = campus)
+    ├── tratados/                    # pontos.csv e vias.csv prontos para importar (unit/ = campus)
+    └── scripts/                     # gerar_rede.py (redes aracaju e unit)
 ```
 
 ---
@@ -154,6 +154,25 @@ A rede tem 20 pontos reais de Aracaju, com coordenadas do OpenStreetMap (fonte e
 As coordenadas servem só para o desenho do mapa. Quem define quais pontos se ligam são as vias. Os pesos são assumidos: a distância é a linha reta multiplicada por 1,3, e o tempo sai da velocidade média do tipo de via (35 km/h nas arteriais, 20 km/h nas locais). O script [dados/scripts/gerar_rede.py](dados/scripts/gerar_rede.py) gera os CSVs, e o significado de cada campo está em [docs/dicionario-dados.md](docs/dicionario-dados.md).
 
 Toda via é de mão dupla e tem pesos maiores que zero, porque o Dijkstra não aceita pesos negativos. Um incidente bloqueia os dois sentidos.
+
+### Segunda rede: campus da UNIT
+
+Em `dados/tratados/unit/` há uma segunda rede, com caminhos **a pé** dentro do campus da UNIT (Farolândia). São 13 pontos e 21 caminhos: portarias, Blocos A a G, Coordenação, Mini Shopping, Estacionamento e os complexos de Comunicação Social e de Especialidades em Saúde. Para usá-la, escolha `dados/tratados/unit/pontos.csv` e `vias.csv` na tela e clique em **Importar rede**. Importar uma rede substitui a outra na API.
+
+- As coordenadas foram coletadas pela equipe, porque o OpenStreetMap não tem os prédios do campus com nome. A fonte e as correções (uma latitude informada sem o sinal negativo) estão em [dados/brutos/unit/FONTES.md](dados/brutos/unit/FONTES.md).
+- Os caminhos são simulados.
+- A distância é a linha reta × 1,2.
+- O tempo usa 5 km/h em caminho livre e 3 km/h em caminho movimentado (perto do Bloco A e do Mini Shopping).
+- Na tela, distâncias abaixo de 1 km aparecem em metros.
+
+| Cenário (Portaria principal U01 até Bloco B U04) | Rota | Total |
+| ------------------------------------------------ | ---- | ----- |
+| Menor distância | Portaria, Bloco A, Bloco B (passa pelo trecho movimentado) | 330 m, 5,9 min |
+| Menor tempo | Portaria, Bloco D, Bloco A, Bloco B (contorna o trecho movimentado) | 430 m, 5,2 min |
+| Menor distância com C03 (Portaria–Bloco A) bloqueado | Portaria, Bloco D, Bloco A, Bloco B | 430 m |
+| C18 e C19 bloqueados, destino Comunicação Social (U11) | sem caminho | `SEM_CAMINHO` |
+
+O teste `RedeCampusUnitTest` confere esses resultados importando os CSVs reais. Para regenerar as duas redes: `python dados/scripts/gerar_rede.py` (ou `... gerar_rede.py unit` para só esta).
 
 ### Rede de validação
 
