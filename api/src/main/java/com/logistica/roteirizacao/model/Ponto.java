@@ -32,6 +32,15 @@ public class Ponto {
     protected Ponto() {
     }
 
+    /**
+     * Cria um ponto, validando os dados.
+     *
+     * @param id        identificador único
+     * @param nome      nome exibido
+     * @param latitude  entre -90 e 90
+     * @param longitude entre -180 e 180
+     * @throws IllegalArgumentException se algum valor for inválido
+     */
     public Ponto(String id, String nome, double latitude, double longitude) {
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("id do ponto é obrigatório.");
@@ -51,18 +60,38 @@ public class Ponto {
         this.longitude = longitude;
     }
 
+    /**
+     * Identificador do ponto.
+     *
+     * @return o id
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Nome exibido do ponto.
+     *
+     * @return o nome
+     */
     public String getNome() {
         return nome;
     }
 
+    /**
+     * Latitude em graus.
+     *
+     * @return a latitude
+     */
     public double getLatitude() {
         return latitude;
     }
 
+    /**
+     * Longitude em graus.
+     *
+     * @return a longitude
+     */
     public double getLongitude() {
         return longitude;
     }

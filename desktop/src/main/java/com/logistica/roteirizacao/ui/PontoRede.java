@@ -13,6 +13,14 @@ public final class PontoRede {
     private final double latitude;
     private final double longitude;
 
+    /**
+     * Cria o ponto.
+     *
+     * @param id        identificador
+     * @param nome      nome exibido
+     * @param latitude  latitude em graus
+     * @param longitude longitude em graus
+     */
     public PontoRede(String id, String nome, double latitude, double longitude) {
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("id do ponto é obrigatório");
@@ -26,9 +34,29 @@ public final class PontoRede {
         this.longitude = longitude;
     }
 
+    /**
+     * Identificador do ponto.
+     *
+     * @return o id
+     */
     public String getId() { return id; }
+    /**
+     * Nome exibido.
+     *
+     * @return o nome
+     */
     public String getNome() { return nome; }
+    /**
+     * Latitude em graus.
+     *
+     * @return a latitude
+     */
     public double getLatitude() { return latitude; }
+    /**
+     * Longitude em graus.
+     *
+     * @return a longitude
+     */
     public double getLongitude() { return longitude; }
 
     /** Igualdade só pelo id, como o domínio da API. */

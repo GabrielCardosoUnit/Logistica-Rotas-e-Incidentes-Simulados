@@ -31,15 +31,18 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JSplitPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
- * Tela única: 1) importar rede, 2) escolher origem/destino/critério, 3) ver resultado,
- * 4) bloquear via. Fluxo: Calcular e Bloquear só liberam depois de uma importação bem-sucedida.
+ * Tela única com o mapa em destaque: 1) importar rede, 2) escolher origem/destino/critério e
+ * 4) bloquear ou desbloquear via (coluna à esquerda), 3) ver resultado (faixa abaixo do mapa). Fluxo: Calcular e Bloquear só liberam depois de uma importação bem-sucedida.
  * Toda chamada à API passa por {@link TarefaEmSegundoPlano} (SwingWorker): a janela não trava.
  *
  * <p>Preferências (critério, última rota, URL da API) ficam no config.bin: lidas ao abrir,
  * gravadas a cada rota calculada e ao fechar a janela.
+ *
+ * @serial exclude
  */
 public class JanelaPrincipal extends JFrame {
 
@@ -57,13 +60,21 @@ public class JanelaPrincipal extends JFrame {
     private RotaResultado ultimaRota;
     private File ultimaPastaExportacao;
     private boolean redeImportada = false;
+    private boolean ocupado = false;
 
-    /** Sem config.bin: usa a configuração padrão e não grava nada (útil em testes). */
+    /**
+     * Sem config.bin: usa a configuração padrão e não grava nada (útil em testes).
+     *
+     * @param cliente acesso à API
+     */
     public JanelaPrincipal(ClienteApi cliente) {
         this(cliente, Configuracao.padrao(), null);
     }
 
     /**
+     * Cria a janela.
+     *
+     * @param cliente             acesso à API
      * @param configuracao        preferências já lidas do config.bin (ou as padrão)
      * @param arquivoConfiguracao onde gravar o config.bin; null para não gravar
      */
@@ -80,16 +91,23 @@ public class JanelaPrincipal extends JFrame {
     private void montarTela() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        JPanel conteudo = new JPanel();
-        conteudo.setLayout(new BoxLayout(conteudo, BoxLayout.Y_AXIS));
-        conteudo.setBorder(BorderFactory.createEmptyBorder(8, 10, 4, 10));
-        conteudo.add(painelImportacao);
-        conteudo.add(Box.createVerticalStrut(6));
-        conteudo.add(painelRota);
-        conteudo.add(Box.createVerticalStrut(6));
-        conteudo.add(painelIncidente);
-        conteudo.add(Box.createVerticalStrut(6));
-        conteudo.add(painelResultado); // ocupa o espaço que sobrar
+        // Layout "mapa protagonista": controles numa coluna à esquerda (importar, rota,
+        // incidentes), mapa grande no centro e o resultado numa faixa logo abaixo dele.
+        JPanel lateral = new JPanel();
+        lateral.setLayout(new BoxLayout(lateral, BoxLayout.Y_AXIS));
+        lateral.setBorder(BorderFactory.createEmptyBorder(8, 10, 4, 0));
+        lateral.add(painelImportacao);
+        lateral.add(Box.createVerticalStrut(6));
+        lateral.add(painelRota);
+        lateral.add(Box.createVerticalStrut(6));
+        lateral.add(painelIncidente);
+        lateral.add(Box.createVerticalGlue()); // painéis encostados no topo
+
+        // Mapa e resultado divididos por uma barra que o usuário pode arrastar.
+        JSplitPane mapaEResultado = new JSplitPane(JSplitPane.VERTICAL_SPLIT, painelMapa, painelResultado);
+        mapaEResultado.setResizeWeight(1.0); // ao redimensionar a janela, quem cresce é o mapa
+        mapaEResultado.setContinuousLayout(true);
+        mapaEResultado.setBorder(null);
 
         progresso.setIndeterminate(true);
         progresso.setVisible(false);
@@ -100,13 +118,13 @@ public class JanelaPrincipal extends JFrame {
         barra.add(progresso, BorderLayout.EAST);
 
         JPanel centro = new JPanel(new BorderLayout(8, 0));
-        centro.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
-        centro.add(conteudo, BorderLayout.WEST);   // telas de controle e resultado
-        centro.add(painelMapa, BorderLayout.CENTER); // mapa esquemático
+        centro.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 10));
+        centro.add(lateral, BorderLayout.WEST);           // importar, origem/destino/critério e incidentes
+        centro.add(mapaEResultado, BorderLayout.CENTER);  // mapa grande + resultado embaixo
 
         add(centro, BorderLayout.CENTER);
         add(barra, BorderLayout.SOUTH);
-        setMinimumSize(new Dimension(1150, 760));
+        setMinimumSize(new Dimension(1150, 800));
         pack();
         setLocationRelativeTo(null);
         getRootPane().setDefaultButton(painelImportacao.getBotaoImportar());
@@ -116,7 +134,10 @@ public class JanelaPrincipal extends JFrame {
         painelImportacao.addImportarListener(e -> importarRede());
         painelRota.addCalcularListener(e -> calcularRota());
         painelIncidente.addBloquearListener(e -> bloquearVia());
+        painelIncidente.addDesbloquearListener(e -> desbloquearVia());
         painelResultado.addExportarListener(e -> exportarRota());
+        painelMapa.setAoClicarPonto(this::aoClicarPontoNoMapa);
+        painelRota.addSelecaoListener(this::sincronizarSelecaoNoMapa);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -125,7 +146,12 @@ public class JanelaPrincipal extends JFrame {
         });
     }
 
-    /** Mensagem mostrada ao abrir, por exemplo sobre o config.bin recuperado ou inválido. */
+    /**
+     * Mensagem mostrada ao abrir, por exemplo sobre o config.bin recuperado ou inválido.
+     *
+     * @param texto   mensagem para o usuário
+     * @param ehAviso {@code true} para destacar como aviso
+     */
     public void mostrarMensagemInicial(String texto, boolean ehAviso) {
         if (ehAviso) {
             mostrarAviso(texto);
@@ -268,6 +294,51 @@ public class JanelaPrincipal extends JFrame {
         mostrarErro(msg);
     }
 
+    // ---- escolher pelo mapa -------------------------------------------------------------------
+
+    /**
+     * Primeiro clique: "você está aqui" (origem). Segundo clique em outro ponto: destino, e a rota
+     * é calculada na hora. Um clique depois disso recomeça pela origem.
+     */
+    void aoClicarPontoNoMapa(String pontoId) {
+        if (!redeImportada) {
+            mostrarErro(Mensagens.IMPORTAR_ANTES);
+            return;
+        }
+        if (ocupado) {
+            return; // a API ainda está respondendo; o clique seria perdido no meio do cálculo
+        }
+        PontoRede origem = painelRota.getOrigem();
+        PontoRede destino = painelRota.getDestino();
+        String nome = nomeDoPonto(pontoId);
+        if (origem == null || destino != null) {
+            painelRota.selecionarOrigem(pontoId);
+            painelRota.limparDestino();
+            painelRota.limparErros();
+            painelResultado.limpar();
+            painelMapa.limparRota();
+            ultimaRota = null;
+            mostrarSucesso("Você está em " + nome + ". Agora clique no mapa no ponto para onde vai.");
+        } else if (origem.getId().equals(pontoId)) {
+            mostrarAviso("Você já está em " + nome + ". Clique em outro ponto para escolher o destino.");
+        } else {
+            painelRota.selecionarDestino(pontoId);
+            calcularRota();
+        }
+    }
+
+    /** O mapa sempre mostra a origem e o destino escolhidos, venham do combo ou do clique. */
+    private void sincronizarSelecaoNoMapa() {
+        PontoRede origem = painelRota.getOrigem();
+        PontoRede destino = painelRota.getDestino();
+        painelMapa.setSelecao(origem == null ? null : origem.getId(), destino == null ? null : destino.getId());
+    }
+
+    private String nomeDoPonto(String id) {
+        PontoRede p = pontosPorId.get(id);
+        return p == null ? id : p.getNome();
+    }
+
     // ---- bloquear via -------------------------------------------------------------------------
 
     private void bloquearVia() {
@@ -290,14 +361,18 @@ public class JanelaPrincipal extends JFrame {
 
     private void aoBloquear(IncidenteResultado incidente) {
         definirOcupado(false, null);
-        painelIncidente.marcarBloqueada(incidente.viaId());
+        painelIncidente.marcarBloqueada(incidente.viaId(), incidente.id());
         painelMapa.marcarViaBloqueada(incidente.viaId());
         String contexto = "Via " + incidente.viaId() + " bloqueada (rede versão " + incidente.versaoRede() + "). ";
+        recalcularUltimaRota(contexto, "Calcule uma rota para ver o desvio.");
+    }
+
+    /** Fluxo do tema: depois de bloquear ou desbloquear um trecho, recalcula a mesma rota. */
+    private void recalcularUltimaRota(String contexto, String semRota) {
         if (ultimaRota == null) {
-            mostrarSucesso(contexto + "Calcule uma rota para ver o desvio.");
+            mostrarSucesso(contexto + semRota);
             return;
         }
-        // Fluxo do tema: bloquear trecho e recalcular a mesma rota sem ele.
         executarCalculo(ultimaRota.origemId(), ultimaRota.destinoId(), ultimaRota.criterio(), contexto);
     }
 
@@ -305,6 +380,56 @@ public class JanelaPrincipal extends JFrame {
         definirOcupado(false, null);
         String msg = Mensagens.doErro(e);
         e.getCampo().ifPresent(campo -> painelIncidente.setErroCampo(campo, msg));
+        mostrarErro(msg);
+    }
+
+    // ---- desbloquear via ----------------------------------------------------------------------
+
+    private void desbloquearVia() {
+        if (!redeImportada) {
+            mostrarErro(Mensagens.IMPORTAR_ANTES);
+            return;
+        }
+        if (!painelIncidente.validarDesbloqueio()) {
+            mostrarErro(Mensagens.ESCOLHER_VIA_BLOQUEADA);
+            return;
+        }
+        final String viaId = painelIncidente.getViaBloqueada().getId();
+        final long incidenteId = painelIncidente.incidenteDa(viaId).orElseThrow();
+        definirOcupado(true, "Desbloqueando a via " + viaId + "…");
+        TarefaEmSegundoPlano.executar(
+                () -> Desfecho.de(() -> cliente.encerrarIncidente(incidenteId)),
+                desfecho -> desfecho.tratar(this::aoDesbloquear, e -> aoFalharDesbloqueio(viaId, e)),
+                this::aoFalharInesperado);
+    }
+
+    private void aoDesbloquear(IncidenteResultado incidente) {
+        definirOcupado(false, null);
+        liberarVia(incidente.viaId());
+        String contexto = "Via " + incidente.viaId() + " desbloqueada (rede versão " + incidente.versaoRede() + "). ";
+        recalcularUltimaRota(contexto, "Ela volta a ser usada nos cálculos.");
+    }
+
+    private void liberarVia(String viaId) {
+        painelIncidente.marcarDesbloqueada(viaId);
+        painelMapa.marcarViaDesbloqueada(viaId);
+    }
+
+    /**
+     * 409 quer dizer que o incidente já estava encerrado na API e 404 que ele não existe mais
+     * (por exemplo, a rede foi reimportada por outro cliente): nos dois casos a via já está
+     * livre, então a tela acompanha a API em vez de manter a via presa na lista.
+     */
+    private void aoFalharDesbloqueio(String viaId, ClienteApiException e) {
+        definirOcupado(false, null);
+        String msg = Mensagens.doErro(e);
+        int status = e.getStatusHttp().orElse(0);
+        if (status == 409 || status == 404) {
+            liberarVia(viaId);
+            mostrarAviso(msg + " A via " + viaId + " foi liberada na tela.");
+            return;
+        }
+        painelIncidente.setErroDesbloqueio(msg);
         mostrarErro(msg);
     }
 
@@ -388,6 +513,7 @@ public class JanelaPrincipal extends JFrame {
 
     /** Enquanto a API responde: bloqueia os botões (evita clique duplo) e mostra progresso. */
     private void definirOcupado(boolean ocupado, String texto) {
+        this.ocupado = ocupado;
         progresso.setVisible(ocupado);
         painelImportacao.setHabilitado(!ocupado);
         painelRota.setHabilitado(!ocupado && redeImportada);

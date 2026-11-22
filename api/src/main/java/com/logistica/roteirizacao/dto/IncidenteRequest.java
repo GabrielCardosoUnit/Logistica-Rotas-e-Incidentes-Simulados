@@ -3,6 +3,12 @@ package com.logistica.roteirizacao.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Corpo de {@code POST /incidentes}: bloqueia uma via.
+ *
+ * @param viaId     identificador da via a ser bloqueada
+ * @param descricao motivo do bloqueio (3 a 200 caracteres)
+ */
 public record IncidenteRequest(
         @NotBlank(message = "Informe a via a ser bloqueada.")
         String viaId,

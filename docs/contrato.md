@@ -14,6 +14,7 @@ requisição e resposta. Versão formal com schemas: [openapi.yaml](openapi.yaml
 | `POST` | `/rotas`             | Calcula uma rota entre origem e destino | `201`   | 400, 404, 503      |
 | `GET`  | `/rotas/{id}`        | Consulta uma rota já calculada          | `200`   | 400, 404, 503      |
 | `POST` | `/incidentes`        | Bloqueia uma via                        | `201`   | 400, 404, 409, 503 |
+| `POST` | `/incidentes/{id}/encerramento` | Desbloqueia a via do incidente | `200` | 400, 404, 409, 503 |
 
 Os exemplos usam a rede de `dados/tratados/` (Aracaju, 20 pontos e 30 vias).
 
@@ -269,6 +270,7 @@ dois sentidos, e `versaoRede` sobe em 1.
   "descricao": "Alagamento simulado na Av. Tancredo Neves",
   "ativo": true,
   "registradoEm": "2026-10-26T10:16:00-03:00",
+  "encerradoEm": null,
   "versaoRede": 2
 }
 ```
@@ -282,6 +284,37 @@ dois sentidos, e `versaoRede` sobe em 1.
 | 404    | `viaId`     | Via V99 não existe na rede.                            |
 | 409    | `viaId`     | A via V24 já está bloqueada pelo incidente 1.          |
 | 409    | `viaId`     | A via V24 já está desabilitada desde a importação.     |
+
+---
+
+## 5. `POST /incidentes/{id}/encerramento`
+
+Encerra o incidente: a via volta a ser usada nos cálculos (nos dois sentidos) e
+`versaoRede` sobe em 1. O incidente não é apagado; fica no histórico com
+`ativo: false` e o horário em `encerradoEm`. Depois disso a via pode ser
+bloqueada de novo com `POST /incidentes`. Não há corpo na requisição.
+
+### Resposta `200 OK`
+
+```json
+{
+  "id": 1,
+  "viaId": "V24",
+  "descricao": "Alagamento simulado na Av. Tancredo Neves",
+  "ativo": false,
+  "registradoEm": "2026-10-26T10:16:00-03:00",
+  "encerradoEm": "2026-10-26T10:30:00-03:00",
+  "versaoRede": 3
+}
+```
+
+### Erros
+
+| Status | `campo` | Mensagem                                                        |
+| ------ | ------- | --------------------------------------------------------------- |
+| 400    | `id`    | O valor 'abc' não é válido para id. Informe um número inteiro.  |
+| 404    | `id`    | Incidente 7 não encontrado.                                     |
+| 409    | `id`    | O incidente 1 já foi encerrado; a via V24 já está desbloqueada. |
 
 ---
 
@@ -310,7 +343,7 @@ Todos os erros saem no mesmo formato, montado pelo `TratadorErrosApi`
 | ---------------- | ------ | ------------------------------------------------------------ |
 | `VALIDACAO`      | 400    | Campo ausente ou inválido, JSON mal formado, CSV inválido    |
 | `NAO_ENCONTRADO` | 404    | Ponto, via, rota ou endereço inexistente                     |
-| `CONFLITO`       | 409    | Via já bloqueada ou já desabilitada                          |
+| `CONFLITO`       | 409    | Via já bloqueada ou desabilitada; incidente já encerrado     |
 | `INDISPONIVEL`   | 503    | Banco de dados fora do ar                                    |
 | `INTERNO`        | 500    | Falha inesperada (detalhes só no log do servidor)            |
 
@@ -326,7 +359,9 @@ aceito no endereço) e `415` (tipo de conteúdo não suportado).
 2. POST /rotas  P05 → P01 distância → P05, P15, P01 (8.5 km)
 3. POST /incidentes  V24            → versaoRede 2
 4. POST /rotas  P05 → P01 distância → P05, P15, P03, P01 (11.7 km)
-5. GET  /rotas/{id}                 → consulta qualquer rota calculada
+5. POST /incidentes/1/encerramento  → versaoRede 3 (V24 desbloqueada)
+6. POST /rotas  P05 → P01 distância → P05, P15, P01 (8.5 km) de novo
+7. GET  /rotas/{id}                 → consulta qualquer rota calculada
 ```
 
 No perfil `dev` a rede de `dados/tratados/` já é carregada ao subir a API, então

@@ -15,7 +15,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-/** Seção 1: escolher pontos.csv e vias.csv e importar a rede. */
+/**
+ * Seção 1: escolher pontos.csv e vias.csv e importar a rede.
+ *
+ * @serial exclude
+ */
 public class PainelImportacao extends JPanel {
 
     private final JTextField campoPontos = new JTextField(30);
@@ -31,6 +35,7 @@ public class PainelImportacao extends JPanel {
     private File arquivoVias;
     private File ultimaPasta;
 
+    /** Monta o painel, com o botão Importar desabilitado até escolher os arquivos. */
     public PainelImportacao() {
         setBorder(BorderFactory.createTitledBorder("1. Importar rede"));
         setLayout(new GridBagLayout());
@@ -119,7 +124,11 @@ public class PainelImportacao extends JPanel {
         Estilo.limpar(erroVias);
     }
 
-    /** Confere se os dois arquivos foram escolhidos e existem. Mostra o erro sob o campo. */
+    /**
+     * Confere se os dois arquivos foram escolhidos e existem. Mostra o erro sob o campo.
+     *
+     * @return {@code true} se pode importar
+     */
     public boolean validar() {
         limparErros();
         boolean ok = true;
@@ -142,7 +151,12 @@ public class PainelImportacao extends JPanel {
         return ok;
     }
 
-    /** Erro devolvido pela API para um campo ("pontos" ou "vias"). */
+    /**
+     * Erro devolvido pela API para um campo ("pontos" ou "vias").
+     *
+     * @param campo    campo apontado pela API
+     * @param mensagem texto mostrado sob o campo
+     */
     public void setErroCampo(String campo, String mensagem) {
         if ("pontos".equals(campo)) {
             Estilo.mostrarErro(erroPontos, mensagem);
@@ -151,28 +165,59 @@ public class PainelImportacao extends JPanel {
         }
     }
 
+    /** Apaga as mensagens de erro dos campos. */
     public void limparErros() {
         Estilo.limpar(erroPontos);
         Estilo.limpar(erroVias);
     }
 
+    /**
+     * Atualiza o texto de situação da rede.
+     *
+     * @param texto situação atual
+     */
     public void setStatus(String texto) {
         statusRede.setText(texto);
     }
 
+    /**
+     * Liga ou desliga os controles (desligados durante uma chamada à API).
+     *
+     * @param habilitado {@code true} para liberar
+     */
     public void setHabilitado(boolean habilitado) {
         btnPontos.setEnabled(habilitado);
         btnVias.setEnabled(habilitado);
         btnImportar.setEnabled(habilitado);
     }
 
+    /**
+     * Arquivo de pontos escolhido.
+     *
+     * @return o arquivo, ou {@code null}
+     */
     public File getArquivoPontos() { return arquivoPontos; }
+    /**
+     * Arquivo de vias escolhido.
+     *
+     * @return o arquivo, ou {@code null}
+     */
     public File getArquivoVias() { return arquivoVias; }
 
+    /**
+     * Avisa quando o usuário clica em Importar.
+     *
+     * @param l ouvinte do clique
+     */
     public void addImportarListener(ActionListener l) {
         btnImportar.addActionListener(l);
     }
 
+    /**
+     * Botão Importar, para a janela torná-lo o botão padrão.
+     *
+     * @return o botão
+     */
     public JButton getBotaoImportar() { return btnImportar; }
 
     @Override

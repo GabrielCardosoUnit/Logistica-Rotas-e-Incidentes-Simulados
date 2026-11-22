@@ -40,6 +40,7 @@ O sistema:
 - importa pontos e vias a partir de arquivos CSV;
 - calcula o menor caminho com Dijkstra, por distância (km) ou por tempo (min);
 - registra incidentes que bloqueiam vias e recalcula sem usar os trechos bloqueados;
+- desbloqueia vias (encerra o incidente) e recalcula já com o trecho de volta;
 - avisa, com uma mensagem clara, quando não existe caminho até o destino;
 - desenha a rede e a rota em um mapa esquemático (Swing);
 - exporta a rota em CSV e guarda configurações em um arquivo binário.
@@ -206,6 +207,7 @@ Base: `http://localhost:8080`. O contrato completo, com exemplos, está em [docs
 | `POST` | `/rotas`             | Calcula uma rota entre origem e destino       | `201`   |
 | `GET`  | `/rotas/{id}`        | Consulta uma rota calculada                   | `200`   |
 | `POST` | `/incidentes`        | Bloqueia uma via                              | `201`   |
+| `POST` | `/incidentes/{id}/encerramento` | Desbloqueia a via do incidente     | `200`   |
 
 ### `POST /rotas`
 
@@ -247,6 +249,10 @@ Substitui a rede atual e incrementa `versaoRede`. Linhas inválidas (peso menor 
 ```
 
 O incidente desabilita a via e incrementa a `versaoRede`. Depois dele, a mesma rota Rodoviária até UNIT passa a ser P05, P15, P03, P01, com 11,7 km. Para recalcular, o cliente chama `POST /rotas` de novo com a mesma origem e destino.
+
+### `POST /incidentes/{id}/encerramento`
+
+Desbloqueia a via: o incidente passa a `ativo: false` (com `encerradoEm`), continua no histórico e a `versaoRede` sobe. A rota Rodoviária até UNIT volta a ser P05, P15, P01, com 8,5 km. Encerrar um incidente já encerrado dá `409`; um id inexistente dá `404`.
 
 ### Erros
 
@@ -402,6 +408,9 @@ Pré-requisito: JDK 17 ou superior. O Docker só é necessário no perfil `prod`
 # Testes
 ./mvnw test
 
+# Javadoc da API e do desktop juntos (abre target/reports/apidocs/index.html)
+./mvnw compile javadoc:aggregate
+
 # API com PostgreSQL (perfil prod)
 cp .env.example .env
 docker compose up -d
@@ -439,7 +448,7 @@ No perfil `prod` a API sobe **sem** a rede carregada: importe pela tela (botão 
 
 ### Cliente desktop
 
-Rode sempre da raiz do repositório, para a tela achar `dados/tratados/`. A janela tem três etapas: importar a rede (os dois CSVs já vêm preenchidos), escolher origem, destino e critério, e calcular. O resultado mostra os pontos do percurso, as vias e os totais de distância e tempo, e a rota é destacada no mapa à direita.
+Rode sempre da raiz do repositório, para a tela achar `dados/tratados/`. A janela tem três etapas: importar a rede (os dois CSVs já vêm preenchidos), escolher origem, destino e critério, e calcular. O resultado mostra os pontos do percurso, as vias e os totais de distância e tempo, e a rota é destacada no mapa, que ocupa o centro da janela, com o resultado logo abaixo dele.
 
 Para conferir: da Rodoviária (P05) até a UNIT (P01), por menor distância, o resultado é 8,5 km e 14,5 min, passando por P15. Os erros aparecem sob o campo e na barra de status. Detalhes em [docs/gui-telas-e-fluxo.md](docs/gui-telas-e-fluxo.md).
 

@@ -1,11 +1,13 @@
 package com.logistica.roteirizacao.controller;
 
 import static org.hamcrest.Matchers.contains;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -68,6 +70,67 @@ class IncidenteControllerTest extends ApiIntegracaoTeste {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.campo").value("viaId"))
                 .andExpect(jsonPath("$.mensagem").value("Informe a via a ser bloqueada."));
+    }
+
+    @Test
+    void desbloquearAViaAVoltaParaARota() throws Exception {
+        long id = corpo(bloquear("V3", "Alagamento simulado")).get("id").asLong();
+        calcular("A", "E", "MENOR_DISTANCIA").andExpect(jsonPath("$.pontos", contains("A", "C", "D", "E")));
+
+        desbloquear(id)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.viaId").value("V3"))
+                .andExpect(jsonPath("$.ativo").value(false))
+                .andExpect(jsonPath("$.encerradoEm").isNotEmpty())
+                .andExpect(jsonPath("$.versaoRede").value(versaoInicial + 2));
+
+        calcular("A", "E", "MENOR_DISTANCIA")
+                .andExpect(jsonPath("$.pontos", contains("A", "B", "D", "E")))
+                .andExpect(jsonPath("$.versaoRede").value(versaoInicial + 2));
+    }
+
+    @Test
+    void depoisDeDesbloquearAViaPodeSerBloqueadaDeNovo() throws Exception {
+        long primeiro = corpo(bloquear("V3", "Alagamento simulado")).get("id").asLong();
+        desbloquear(primeiro).andExpect(status().isOk());
+
+        bloquear("V3", "Novo alagamento")
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.ativo").value(true))
+                .andExpect(jsonPath("$.encerradoEm").doesNotExist());
+    }
+
+    @Test
+    void desbloquearDuasVezesGera409() throws Exception {
+        long id = corpo(bloquear("V3", "Alagamento simulado")).get("id").asLong();
+        desbloquear(id).andExpect(status().isOk());
+
+        desbloquear(id)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.erro").value("CONFLITO"))
+                .andExpect(jsonPath("$.campo").value("id"))
+                .andExpect(jsonPath("$.mensagem")
+                        .value("O incidente " + id + " já foi encerrado; a via V3 já está desbloqueada."));
+    }
+
+    @Test
+    void desbloquearIncidenteInexistenteGera404() throws Exception {
+        desbloquear(999_999)
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.campo").value("id"))
+                .andExpect(jsonPath("$.mensagem").value("Incidente 999999 não encontrado."));
+    }
+
+    @Test
+    void idNaoNumericoNoDesbloqueioGera400() throws Exception {
+        mvc.perform(post("/incidentes/abc/encerramento"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campo").value("id"));
+    }
+
+    private ResultActions desbloquear(long id) throws Exception {
+        return mvc.perform(post("/incidentes/" + id + "/encerramento"));
     }
 
     @Test

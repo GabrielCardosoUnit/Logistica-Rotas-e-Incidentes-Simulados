@@ -5,12 +5,14 @@ package com.logistica.roteirizacao.model;
  * peso ({@link CriterioRota}) usar no Dijkstra.
  */
 public enum TipoCriterio {
+    /** Peso = distância da via (km). */
     MENOR_DISTANCIA {
         @Override
         public CriterioRota estrategia() {
             return new MenorDistancia();
         }
     },
+    /** Peso = tempo de percurso da via (min). */
     MENOR_TEMPO {
         @Override
         public CriterioRota estrategia() {
@@ -18,5 +20,10 @@ public enum TipoCriterio {
         }
     };
 
+    /**
+     * Estratégia de peso deste critério.
+     *
+     * @return nova instância do critério
+     */
     public abstract CriterioRota estrategia();
 }

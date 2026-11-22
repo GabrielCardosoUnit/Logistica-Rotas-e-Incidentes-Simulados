@@ -84,6 +84,96 @@ class JanelaPrincipalTest {
     }
 
     @Test
+    void desbloquearViaRecalculaComElaDeNovo() throws Exception {
+        abrirEImportar(Configuracao.padrao(), null);
+        naEdt(() -> {
+            janela.painelRota().selecionar("P05", "P01");
+            janela.painelRota().getBotaoCalcular().doClick();
+        });
+        aguardar(() -> janela.ultimaRota() != null);
+        assertFalse(lerNaEdt(() -> janela.painelIncidente().getBotaoDesbloquear().isEnabled()),
+                "sem via bloqueada não há o que desbloquear");
+
+        naEdt(() -> {
+            assertTrue(janela.painelIncidente().selecionarVia("V24"));
+            janela.painelIncidente().getBotaoBloquear().doClick();
+        });
+        aguardar(() -> cliente.calculos.size() == 2 && janela.ultimaRota().pontos().size() == 4);
+        assertTrue(lerNaEdt(() -> janela.painelIncidente().getBotaoDesbloquear().isEnabled()));
+
+        naEdt(() -> {
+            assertTrue(janela.painelIncidente().selecionarViaBloqueada("V24"));
+            janela.painelIncidente().getBotaoDesbloquear().doClick();
+        });
+        aguardar(() -> cliente.calculos.size() == 3 && janela.ultimaRota().pontos().size() == 3);
+
+        assertEquals(List.of(1L), cliente.encerrados, "encerra o incidente devolvido no bloqueio");
+        assertEquals(List.of("P05", "P15", "P01"), lerNaEdt(() -> janela.ultimaRota().pontos()));
+        String barra = lerNaEdt(janela::textoDaBarra);
+        assertTrue(barra.contains("Via V24 desbloqueada") && barra.contains("Rota recalculada: 8,5 km"), barra);
+        assertFalse(lerNaEdt(() -> janela.painelMapa().estaBloqueada(new ViaRede("V24", "P15", "P01", true))));
+        assertTrue(lerNaEdt(() -> janela.painelIncidente().selecionarVia("V24")),
+                "a via volta a poder ser bloqueada");
+        assertFalse(lerNaEdt(() -> janela.painelIncidente().selecionarViaBloqueada("V24")));
+    }
+
+    @Test
+    void desbloquearSemEscolherViaMostraErroSemChamarAApi() throws Exception {
+        abrirEImportar(Configuracao.padrao(), null);
+        naEdt(() -> {
+            assertTrue(janela.painelIncidente().selecionarVia("V24"));
+            janela.painelIncidente().getBotaoBloquear().doClick();
+        });
+        aguardar(() -> janela.painelIncidente().getBotaoDesbloquear().isEnabled());
+
+        naEdt(() -> janela.painelIncidente().getBotaoDesbloquear().doClick());
+
+        assertTrue(cliente.encerrados.isEmpty());
+        assertTrue(lerNaEdt(janela::textoDaBarra).startsWith("Erro: Selecione a via a desbloquear"));
+    }
+
+    @Test
+    void doisCliquesNoMapaEscolhemOrigemEDestinoECalculamARota() throws Exception {
+        abrirEImportar(Configuracao.padrao(), null);
+
+        naEdt(() -> janela.aoClicarPontoNoMapa("P05"));
+        assertEquals("P05", lerNaEdt(() -> janela.painelRota().getOrigem().getId()));
+        assertEquals(null, lerNaEdt(() -> janela.painelRota().getDestino()));
+        assertTrue(lerNaEdt(janela::textoDaBarra).contains("Agora clique no mapa no ponto para onde vai"));
+        assertTrue(cliente.calculos.isEmpty(), "só a origem não calcula nada");
+
+        naEdt(() -> janela.aoClicarPontoNoMapa("P01"));
+        aguardar(() -> janela.ultimaRota() != null);
+
+        assertEquals(List.of("P05→P01:MENOR_DISTANCIA"), cliente.calculos);
+        assertEquals("P01", lerNaEdt(() -> janela.painelRota().getDestino().getId()));
+    }
+
+    @Test
+    void terceiroCliqueNoMapaRecomecaPelaOrigem() throws Exception {
+        abrirEImportar(Configuracao.padrao(), null);
+        naEdt(() -> janela.aoClicarPontoNoMapa("P05"));
+        naEdt(() -> janela.aoClicarPontoNoMapa("P01"));
+        aguardar(() -> janela.ultimaRota() != null);
+
+        naEdt(() -> janela.aoClicarPontoNoMapa("P12"));
+
+        assertEquals("P12", lerNaEdt(() -> janela.painelRota().getOrigem().getId()));
+        assertEquals(null, lerNaEdt(() -> janela.painelRota().getDestino()));
+        assertEquals(null, lerNaEdt(janela::ultimaRota), "a rota antiga sai da tela");
+    }
+
+    @Test
+    void clicarDuasVezesNaOrigemNaoCalcula() throws Exception {
+        abrirEImportar(Configuracao.padrao(), null);
+        naEdt(() -> janela.aoClicarPontoNoMapa("P05"));
+        naEdt(() -> janela.aoClicarPontoNoMapa("P05"));
+
+        assertTrue(cliente.calculos.isEmpty());
+        assertTrue(lerNaEdt(janela::textoDaBarra).startsWith("Aviso: Você já está em"));
+    }
+
+    @Test
     void exportaARotaCalculadaEmCsv() throws Exception {
         abrirEImportar(Configuracao.padrao(), null);
         naEdt(() -> {
@@ -175,6 +265,7 @@ class JanelaPrincipalTest {
         // escritas no SwingWorker e lidas pelo teste: listas seguras entre threads
         private final List<String> calculos = new CopyOnWriteArrayList<>();
         private final List<String> incidentes = new CopyOnWriteArrayList<>();
+        private final List<Long> encerrados = new CopyOnWriteArrayList<>();
 
         @Override
         public ImportacaoResultado importarRede(File pontos, File vias) {
@@ -186,7 +277,7 @@ class JanelaPrincipalTest {
             calculos.add(origemId + "→" + destinoId + ":" + criterio.name());
             long id = calculos.size();
             OffsetDateTime agora = OffsetDateTime.parse("2026-11-10T10:15:00-03:00");
-            if (incidentes.contains("V24")) {
+            if (v24Bloqueada()) {
                 return new RotaResultado(id, origemId, destinoId, criterio, "CALCULADA",
                         List.of("P05", "P15", "P03", "P01"), List.of("V14", "V23", "V25"),
                         11.7, 23.2, 2, null, agora);
@@ -205,6 +296,24 @@ class JanelaPrincipalTest {
             incidentes.add(viaId);
             return new IncidenteResultado(incidentes.size(), viaId, descricao, true,
                     OffsetDateTime.parse("2026-11-10T10:16:00-03:00"), 2);
+        }
+
+        /** O id do incidente é a posição dele em {@link #incidentes} (a partir de 1). */
+        @Override
+        public IncidenteResultado encerrarIncidente(long incidenteId) {
+            encerrados.add(incidenteId);
+            String viaId = incidentes.get((int) incidenteId - 1);
+            return new IncidenteResultado(incidenteId, viaId, "Alagamento simulado", false,
+                    OffsetDateTime.parse("2026-11-10T10:16:00-03:00"), 3);
+        }
+
+        private boolean v24Bloqueada() {
+            for (int i = 0; i < incidentes.size(); i++) {
+                if (incidentes.get(i).equals("V24") && !encerrados.contains((long) i + 1)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

@@ -8,6 +8,10 @@ import java.util.Objects;
  */
 public abstract class CriterioRotaBase implements CriterioRota {
 
+    /** Construtor para as subclasses. */
+    public CriterioRotaBase() {
+    }
+
     @Override
     public final double peso(Via via) {
         Objects.requireNonNull(via, "via é obrigatória para calcular o peso.");
@@ -18,6 +22,12 @@ public abstract class CriterioRotaBase implements CriterioRota {
         return peso;
     }
 
+    /**
+     * Peso bruto da via, validado depois por {@link #peso(Via)}.
+     *
+     * @param via via não nula
+     * @return peso da via segundo o critério
+     */
     protected abstract double pesoDe(Via via);
 
     @Override

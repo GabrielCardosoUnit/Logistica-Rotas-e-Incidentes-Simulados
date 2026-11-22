@@ -28,6 +28,7 @@ import java.util.Objects;
  */
 public final class ExportadorRotaCsv {
 
+    /** Cabeçalho do CSV exportado: uma linha por ponto da rota. */
     public static final String CABECALHO = "rotaId,criterio,ordem,pontoId,pontoNome,viaChegadaId,"
             + "distanciaTotalKm,tempoTotalMin,versaoRede,calculadaEm";
 
@@ -37,8 +38,13 @@ public final class ExportadorRotaCsv {
     }
 
     /**
+     * Grava a rota em CSV (UTF-8), um ponto por linha.
+     *
+     * @param rota       rota com caminho
      * @param nomesPorId nome de cada ponto, para o arquivo ficar legível (ponto sem nome sai vazio)
+     * @param arquivo    destino (sobrescrito)
      * @throws IllegalArgumentException se a rota é "sem caminho": não há percurso para exportar
+     * @throws IOException se não for possível gravar
      */
     public static void exportar(RotaResultado rota, Map<String, String> nomesPorId, File arquivo) throws IOException {
         Objects.requireNonNull(rota, "rota é obrigatória.");
@@ -68,7 +74,13 @@ public final class ExportadorRotaCsv {
         Files.write(arquivo.toPath(), linhas, StandardCharsets.UTF_8);
     }
 
-    /** Lê um CSV gerado por {@link #exportar} e reconstrói a rota. */
+    /**
+     * Lê um CSV gerado por {@link #exportar} e reconstrói a rota.
+     *
+     * @param arquivo CSV exportado
+     * @return a rota lida
+     * @throws IOException se o arquivo faltar, tiver cabeçalho errado ou valor inválido
+     */
     public static RotaResultado ler(File arquivo) throws IOException {
         Objects.requireNonNull(arquivo, "arquivo é obrigatório.");
         if (!arquivo.isFile()) {

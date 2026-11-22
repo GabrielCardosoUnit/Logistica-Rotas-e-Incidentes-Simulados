@@ -20,12 +20,32 @@ public class CalculadorRota {
     private record Candidato(String pontoId, double custo) {
     }
 
-    /** Critério padrão: menor distância. */
+    /** Cria o calculador. Não guarda estado entre cálculos. */
+    public CalculadorRota() {
+    }
+
+    /**
+     * Calcula a rota com o critério padrão: menor distância.
+     *
+     * @param grafo     rede com as vias bloqueadas já marcadas
+     * @param origemId  ponto de partida
+     * @param destinoId ponto de chegada
+     * @return a rota de menor distância
+     * @throws IllegalArgumentException se origem ou destino não estão no grafo
+     * @throws CaminhoInexistenteException se o destino não é alcançável sem vias bloqueadas
+     */
     public Rota calcular(Grafo grafo, String origemId, String destinoId) {
         return calcular(grafo, origemId, destinoId, new MenorDistancia());
     }
 
     /**
+     * Calcula a rota de menor custo pelo algoritmo de Dijkstra.
+     *
+     * @param grafo     rede com as vias bloqueadas já marcadas
+     * @param origemId  ponto de partida
+     * @param destinoId ponto de chegada
+     * @param criterio  define o peso de cada via
+     * @return a rota de menor custo, com distância e tempo totais
      * @throws IllegalArgumentException se origem ou destino não estão no grafo
      * @throws CaminhoInexistenteException se o destino não é alcançável sem vias bloqueadas
      */

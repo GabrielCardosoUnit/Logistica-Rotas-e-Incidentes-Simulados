@@ -24,6 +24,13 @@ public final class LeitorPontosCsv {
         // classe utilitária (método estático)
     }
 
+    /**
+     * Lê os pontos do arquivo, ignorando linhas malformadas.
+     *
+     * @param arquivo pontos.csv escolhido na importação
+     * @return pontos válidos, na ordem do arquivo
+     * @throws IOException se o arquivo não existir, não puder ser lido ou tiver cabeçalho errado
+     */
     public static List<PontoRede> ler(File arquivo) throws IOException {
         if (arquivo == null || !arquivo.isFile()) {
             throw new IOException("Arquivo pontos.csv não encontrado. Escolha o arquivo novamente.");

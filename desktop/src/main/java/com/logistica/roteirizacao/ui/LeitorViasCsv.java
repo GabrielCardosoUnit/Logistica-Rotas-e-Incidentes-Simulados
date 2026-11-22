@@ -18,6 +18,13 @@ public final class LeitorViasCsv {
     private LeitorViasCsv() {
     }
 
+    /**
+     * Lê as vias do arquivo, ignorando linhas malformadas.
+     *
+     * @param arquivo vias.csv escolhido na importação
+     * @return vias válidas, na ordem do arquivo
+     * @throws IOException se o arquivo não existir, não puder ser lido ou tiver cabeçalho errado
+     */
     public static List<ViaRede> ler(File arquivo) throws IOException {
         if (arquivo == null || !arquivo.isFile()) {
             throw new IOException("Arquivo vias.csv não encontrado. Escolha o arquivo novamente.");

@@ -30,7 +30,9 @@ import java.util.Objects;
  */
 public final class ConfiguracaoBinaria {
 
+    /** Versão do formato gravada no início do arquivo. */
     public static final int VERSAO = 1;
+    /** Nome padrão do arquivo, na pasta em que o programa foi iniciado. */
     public static final String NOME_ARQUIVO = "config.bin";
 
     private static final int CODIGO_DISTANCIA = 0;
@@ -39,6 +41,13 @@ public final class ConfiguracaoBinaria {
     private ConfiguracaoBinaria() {
     }
 
+    /**
+     * Grava a configuração no formato binário.
+     *
+     * @param config  configuração a gravar
+     * @param arquivo destino (sobrescrito)
+     * @throws IOException se não for possível gravar
+     */
     public static void salvar(Configuracao config, File arquivo) throws IOException {
         Objects.requireNonNull(config, "configuração é obrigatória.");
         Objects.requireNonNull(arquivo, "arquivo é obrigatório.");
@@ -52,6 +61,14 @@ public final class ConfiguracaoBinaria {
         }
     }
 
+    /**
+     * Lê a configuração gravada por {@link #salvar}.
+     *
+     * @param arquivo arquivo a ler
+     * @return a configuração lida
+     * @throws ConfiguracaoInvalidaException se o arquivo faltar, estiver truncado, com versão não suportada ou valor inválido
+     * @throws IOException se houver outra falha de leitura
+     */
     public static Configuracao ler(File arquivo) throws IOException {
         Objects.requireNonNull(arquivo, "arquivo é obrigatório.");
         if (!arquivo.isFile()) {

@@ -21,6 +21,11 @@ public final class Principal {
     private Principal() {
     }
 
+    /**
+     * Abre a janela.
+     *
+     * @param args opcional: URL da API (ex.: {@code http://localhost:8081})
+     */
     public static void main(String[] args) {
         File arquivo = new File(ConfiguracaoBinaria.NOME_ARQUIVO);
         Configuracao configuracao;

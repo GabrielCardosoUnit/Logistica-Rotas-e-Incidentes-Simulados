@@ -39,13 +39,27 @@ public class TratadorErrosApi {
 
     private static final Logger log = LoggerFactory.getLogger(TratadorErrosApi.class);
 
-    /** Exceções da própria aplicação (400, 404, 409...). */
+    /** Construtor usado pelo Spring. */
+    public TratadorErrosApi() {
+    }
+
+    /**
+     * Exceções da própria aplicação (400, 404, 409...).
+     *
+     * @param e exceção lançada
+     * @return erro com o status do tipo da exceção
+     */
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErroResponse> tratarApi(ApiException e) {
         return responder(e.getTipo(), e.getCampo(), e.getMessage());
     }
 
-    /** Bean Validation no corpo (@Valid). Devolve o primeiro campo, na ordem em que foi declarado. */
+    /**
+     * Bean Validation no corpo (@Valid). Devolve o primeiro campo, na ordem em que foi declarado.
+     *
+     * @param e exceção do Spring com os campos inválidos
+     * @return erro 400 com o primeiro campo inválido
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResponse> tratarValidacao(MethodArgumentNotValidException e) {
         Object alvo = e.getBindingResult().getTarget();
@@ -60,7 +74,12 @@ public class TratadorErrosApi {
         return responder(TipoErro.VALIDACAO, primeiro.getField(), primeiro.getDefaultMessage());
     }
 
-    /** JSON mal formado ou valor de tipo errado (ex.: critério que não existe). */
+    /**
+     * JSON mal formado ou valor de tipo errado (ex.: critério que não existe).
+     *
+     * @param e exceção do Spring ao ler o corpo
+     * @return erro 400 indicando o campo, quando possível
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErroResponse> tratarCorpoIlegivel(HttpMessageNotReadableException e) {
         if (e.getCause() instanceof InvalidFormatException invalido && !invalido.getPath().isEmpty()) {
@@ -85,13 +104,24 @@ public class TratadorErrosApi {
                 "Corpo da requisição ausente ou mal formado. Envie um JSON válido.");
     }
 
-    /** Ex.: GET /rotas/abc. */
+    /**
+     * Parâmetro de caminho com tipo errado. Ex.: GET /rotas/abc.
+     *
+     * @param e exceção do Spring
+     * @return erro 400 indicando o parâmetro
+     */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErroResponse> tratarTipoParametro(MethodArgumentTypeMismatchException e) {
         return responder(TipoErro.VALIDACAO, e.getName(),
                 "O valor '" + e.getValue() + "' não é válido para " + e.getName() + ". Informe um número inteiro.");
     }
 
+    /**
+     * Faltou um dos arquivos no multipart da importação.
+     *
+     * @param e exceção do Spring
+     * @return erro 400 indicando o arquivo que falta
+     */
     @ExceptionHandler(MissingServletRequestPartException.class)
     public ResponseEntity<ErroResponse> tratarArquivoAusente(MissingServletRequestPartException e) {
         String parte = e.getRequestPartName();
@@ -99,17 +129,35 @@ public class TratadorErrosApi {
                 "Envie o arquivo " + parte + ".csv no campo '" + parte + "' do formulário.");
     }
 
+    /**
+     * Upload acima do limite configurado.
+     *
+     * @param e exceção do Spring
+     * @return erro 400
+     */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErroResponse> tratarArquivoGrande(MaxUploadSizeExceededException e) {
         return responder(TipoErro.VALIDACAO, null, "Arquivo maior que o limite permitido para upload.");
     }
 
+    /**
+     * Requisição de importação que não é multipart/form-data.
+     *
+     * @param e exceção do Spring
+     * @return erro 400
+     */
     @ExceptionHandler(MultipartException.class)
     public ResponseEntity<ErroResponse> tratarMultipart(MultipartException e) {
         return responder(TipoErro.VALIDACAO, null,
                 "Envie os arquivos como multipart/form-data, nos campos 'pontos' e 'vias'.");
     }
 
+    /**
+     * Content-Type não aceito pelo endpoint.
+     *
+     * @param e exceção do Spring
+     * @return erro 415
+     */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ErroResponse> tratarMediaType(HttpMediaTypeNotSupportedException e) {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
@@ -117,6 +165,12 @@ public class TratadorErrosApi {
                         "Tipo de conteúdo não suportado: " + e.getContentType() + "."));
     }
 
+    /**
+     * Método HTTP não aceito no endereço.
+     *
+     * @param e exceção do Spring
+     * @return erro 405
+     */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErroResponse> tratarMetodo(HttpRequestMethodNotSupportedException e) {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
@@ -124,19 +178,35 @@ public class TratadorErrosApi {
                         "Método " + e.getMethod() + " não é aceito neste endereço."));
     }
 
+    /**
+     * Endereço que não existe na API.
+     *
+     * @param e exceção do Spring
+     * @return erro 404
+     */
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErroResponse> tratarRotaInexistente(NoResourceFoundException e) {
         return responder(TipoErro.NAO_ENCONTRADO, null, "Endereço /" + e.getResourcePath() + " não existe.");
     }
 
-    /** Banco fora do ar, conexão recusada etc. */
+    /**
+     * Banco fora do ar, conexão recusada etc.
+     *
+     * @param e falha de acesso ao banco
+     * @return erro 503
+     */
     @ExceptionHandler({DataAccessResourceFailureException.class, CannotCreateTransactionException.class})
     public ResponseEntity<ErroResponse> tratarBancoIndisponivel(Exception e) {
         log.error("Banco de dados indisponível", e);
         return responder(TipoErro.INDISPONIVEL, null, "Banco de dados indisponível. Tente novamente em instantes.");
     }
 
-    /** Qualquer outra falha: não expõe detalhes internos, mas registra no log. */
+    /**
+     * Qualquer outra falha: não expõe detalhes internos, mas registra no log.
+     *
+     * @param e falha não prevista
+     * @return erro 500
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResponse> tratarInesperado(Exception e) {
         log.error("Erro inesperado", e);

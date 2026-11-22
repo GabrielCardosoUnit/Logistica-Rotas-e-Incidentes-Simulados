@@ -318,6 +318,73 @@ paths:
         "503":
           $ref: "#/components/responses/Indisponivel"
 
+  /incidentes/{id}/encerramento:
+    post:
+      tags: [Incidentes]
+      summary: Desbloqueia a via do incidente
+      description: |
+        Encerra o incidente: a via volta a ser usada nos cálculos (nos dois
+        sentidos) e `versaoRede` é incrementada. O incidente continua no
+        histórico com `ativo: false` e `encerradoEm` preenchido.
+      operationId: encerrarIncidente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Incidente encerrado e via desbloqueada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidenteResponse"
+              example:
+                id: 1
+                viaId: V24
+                descricao: Alagamento simulado na Av. Tancredo Neves
+                ativo: false
+                registradoEm: "2026-10-26T10:16:00-03:00"
+                encerradoEm: "2026-10-26T10:30:00-03:00"
+                versaoRede: 3
+        "400":
+          description: Id não numérico
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 400
+                erro: VALIDACAO
+                campo: id
+                mensagem: "O valor 'abc' não é válido para id. Informe um número inteiro."
+        "404":
+          description: Incidente inexistente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 404
+                erro: NAO_ENCONTRADO
+                campo: id
+                mensagem: "Incidente 7 não encontrado."
+        "409":
+          description: Incidente já encerrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                status: 409
+                erro: CONFLITO
+                campo: id
+                mensagem: "O incidente 1 já foi encerrado; a via V24 já está desbloqueada."
+        "503":
+          $ref: "#/components/responses/Indisponivel"
+
 components:
   responses:
     Indisponivel:
@@ -457,6 +524,11 @@ components:
         registradoEm:
           type: string
           format: date-time
+        encerradoEm:
+          type: string
+          format: date-time
+          nullable: true
+          description: Quando a via foi desbloqueada; null enquanto o incidente está ativo
         versaoRede:
           type: integer
 

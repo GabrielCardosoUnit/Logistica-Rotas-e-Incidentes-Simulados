@@ -44,6 +44,18 @@ public class Via {
     protected Via() {
     }
 
+    /**
+     * Cria uma via, validando os dados.
+     *
+     * @param id          identificador único
+     * @param origem      ponto de uma ponta
+     * @param destino     ponto da outra ponta (diferente da origem)
+     * @param distanciaKm distância, maior que zero
+     * @param tempoMin    tempo de percurso, maior que zero
+     * @param habilitada  {@code false} se a via vem fechada no CSV
+     * @throws IllegalArgumentException se algum valor for inválido
+     * @throws NullPointerException se origem ou destino forem nulos
+     */
     public Via(String id, Ponto origem, Ponto destino, double distanciaKm, double tempoMin, boolean habilitada) {
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("id da via é obrigatório.");
@@ -71,26 +83,56 @@ public class Via {
         }
     }
 
+    /**
+     * Identificador da via.
+     *
+     * @return o id
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Ponto de uma ponta da via.
+     *
+     * @return a origem
+     */
     public Ponto getOrigem() {
         return origem;
     }
 
+    /**
+     * Ponto da outra ponta da via.
+     *
+     * @return o destino
+     */
     public Ponto getDestino() {
         return destino;
     }
 
+    /**
+     * Distância da via.
+     *
+     * @return distância em km
+     */
     public double getDistanciaKm() {
         return distanciaKm;
     }
 
+    /**
+     * Tempo de percurso da via.
+     *
+     * @return tempo em minutos
+     */
     public double getTempoMin() {
         return tempoMin;
     }
 
+    /**
+     * Diz se a via estava aberta na importação.
+     *
+     * @return {@code false} se a via veio desabilitada no CSV
+     */
     public boolean isHabilitada() {
         return habilitada;
     }

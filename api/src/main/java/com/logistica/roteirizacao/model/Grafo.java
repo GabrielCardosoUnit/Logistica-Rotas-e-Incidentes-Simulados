@@ -18,7 +18,13 @@ import java.util.TreeSet;
  */
 public class Grafo {
 
-    /** Uma direção percorrível de uma via (a via é de mão dupla). */
+    /**
+     * Uma direção percorrível de uma via (a via é de mão dupla).
+     *
+     * @param via  via percorrida
+     * @param de   ponto de saída
+     * @param para ponto de chegada
+     */
     public record Trecho(Via via, String de, String para) {
     }
 
@@ -27,6 +33,16 @@ public class Grafo {
     private final Set<String> viasBloqueadas = new TreeSet<>();
     private final Set<String> viasConhecidas = new TreeSet<>();
 
+    /** Cria um grafo vazio. */
+    public Grafo() {
+    }
+
+    /**
+     * Adiciona um ponto ao grafo.
+     *
+     * @param ponto ponto a adicionar
+     * @throws IllegalArgumentException se já existe ponto com o mesmo id
+     */
     public void adicionarPonto(Ponto ponto) {
         Objects.requireNonNull(ponto, "ponto é obrigatório.");
         if (pontos.putIfAbsent(ponto.getId(), ponto) != null) {
@@ -35,7 +51,12 @@ public class Grafo {
         adjacencias.put(ponto.getId(), new ArrayList<>());
     }
 
-    /** Adiciona os dois sentidos da via. Via desabilitada já entra bloqueada. */
+    /**
+     * Adiciona os dois sentidos da via. Via desabilitada já entra bloqueada.
+     *
+     * @param via via cujos pontos já estão no grafo
+     * @throws IllegalArgumentException se a via já existe ou um dos pontos não está no grafo
+     */
     public void adicionarVia(Via via) {
         Objects.requireNonNull(via, "via é obrigatória.");
         String origem = via.getOrigem().getId();
@@ -52,6 +73,12 @@ public class Grafo {
         }
     }
 
+    /**
+     * Bloqueia a via nos dois sentidos.
+     *
+     * @param viaId id da via
+     * @throws IllegalArgumentException se a via não existe no grafo
+     */
     public void bloquearVia(String viaId) {
         if (!viasConhecidas.contains(viaId)) {
             throw new IllegalArgumentException("Via " + viaId + " não existe no grafo.");
@@ -59,28 +86,61 @@ public class Grafo {
         viasBloqueadas.add(viaId);
     }
 
+    /**
+     * Diz se o ponto está no grafo.
+     *
+     * @param pontoId id do ponto
+     * @return {@code true} se o ponto existe
+     */
     public boolean contemPonto(String pontoId) {
         return pontos.containsKey(pontoId);
     }
 
+    /**
+     * Diz se a via está bloqueada.
+     *
+     * @param viaId id da via
+     * @return {@code true} se a via está bloqueada
+     */
     public boolean estaBloqueada(String viaId) {
         return viasBloqueadas.contains(viaId);
     }
 
+    /**
+     * Trechos que saem do ponto, incluindo os de vias bloqueadas.
+     *
+     * @param pontoId id do ponto
+     * @return trechos de saída (lista imutável)
+     * @throws IllegalArgumentException se o ponto não existe no grafo
+     */
     public List<Trecho> trechosSaindoDe(String pontoId) {
         exigirPonto(pontoId);
         return Collections.unmodifiableList(adjacencias.get(pontoId));
     }
 
-    /** Ids das vias bloqueadas, em ordem crescente. */
+    /**
+     * Ids das vias bloqueadas, em ordem crescente.
+     *
+     * @return lista imutável com os ids
+     */
     public List<String> viasBloqueadas() {
         return List.copyOf(viasBloqueadas);
     }
 
+    /**
+     * Quantidade de pontos.
+     *
+     * @return número de pontos no grafo
+     */
     public int quantidadePontos() {
         return pontos.size();
     }
 
+    /**
+     * Quantidade de vias (cada via conta uma vez, não por sentido).
+     *
+     * @return número de vias no grafo
+     */
     public int quantidadeVias() {
         return viasConhecidas.size();
     }

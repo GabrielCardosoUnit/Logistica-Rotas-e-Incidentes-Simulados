@@ -21,7 +21,11 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-/** Seção 2: origem, destino, critério (distância ou tempo) e botão Calcular. */
+/**
+ * Seção 2: origem, destino, critério (distância ou tempo) e botão Calcular.
+ *
+ * @serial exclude
+ */
 public class PainelSelecaoRota extends JPanel {
 
     private static final String PLACEHOLDER = "Selecione um ponto…";
@@ -36,6 +40,7 @@ public class PainelSelecaoRota extends JPanel {
     private final JLabel erroDestino = Estilo.rotuloErro();
     private final JLabel dica = new JLabel("Importe a rede para liberar a escolha dos pontos.");
 
+    /** Monta o painel, desabilitado até a rede ser importada. */
     public PainelSelecaoRota() {
         setBorder(BorderFactory.createTitledBorder("2. Escolher origem, destino e critério"));
         setLayout(new GridBagLayout());
@@ -113,7 +118,11 @@ public class PainelSelecaoRota extends JPanel {
         add(c, g);
     }
 
-    /** Preenche os dois combos com os pontos importados e volta à situação "nada escolhido". */
+    /**
+     * Preenche os dois combos com os pontos importados e volta à situação "nada escolhido".
+     *
+     * @param pontos pontos da rede
+     */
     public void setPontos(List<PontoRede> pontos) {
         DefaultComboBoxModel<PontoRede> mo = modeloVazio();
         DefaultComboBoxModel<PontoRede> md = modeloVazio();
@@ -132,7 +141,11 @@ public class PainelSelecaoRota extends JPanel {
         comboDestino.setSelectedItem(o);
     }
 
-    /** Valida a escolha. Mensagens dizem o que corrigir, sob o campo com problema. */
+    /**
+     * Valida a escolha. Mensagens dizem o que corrigir, sob o campo com problema.
+     *
+     * @return {@code true} se pode calcular
+     */
     public boolean validar() {
         limparErros();
         boolean ok = true;
@@ -150,7 +163,13 @@ public class PainelSelecaoRota extends JPanel {
         return ok;
     }
 
-    /** Erro da API por campo (origemId, destinoId). Devolve true se algum campo era nosso. */
+    /**
+     * Erro da API por campo (origemId, destinoId).
+     *
+     * @param campo    campo apontado pela API
+     * @param mensagem texto mostrado sob o campo
+     * @return {@code true} se o campo é deste painel
+     */
     public boolean setErroCampo(String campo, String mensagem) {
         if ("origemId".equals(campo)) {
             Estilo.mostrarErro(erroOrigem, mensagem);
@@ -163,11 +182,17 @@ public class PainelSelecaoRota extends JPanel {
         return false;
     }
 
+    /** Apaga as mensagens de erro dos campos. */
     public void limparErros() {
         Estilo.limpar(erroOrigem);
         Estilo.limpar(erroDestino);
     }
 
+    /**
+     * Liga ou desliga os controles (desligados sem rede ou durante uma chamada à API).
+     *
+     * @param habilitado {@code true} para liberar
+     */
     public void setHabilitado(boolean habilitado) {
         comboOrigem.setEnabled(habilitado);
         comboDestino.setEnabled(habilitado);
@@ -178,26 +203,84 @@ public class PainelSelecaoRota extends JPanel {
         dica.setVisible(!habilitado && comboOrigem.getItemCount() <= 1);
     }
 
+    /**
+     * Origem escolhida.
+     *
+     * @return o ponto, ou {@code null}
+     */
     public PontoRede getOrigem() { return (PontoRede) comboOrigem.getSelectedItem(); }
+    /**
+     * Destino escolhido.
+     *
+     * @return o ponto, ou {@code null}
+     */
     public PontoRede getDestino() { return (PontoRede) comboDestino.getSelectedItem(); }
 
+    /**
+     * Critério marcado.
+     *
+     * @return o critério
+     */
     public Criterio getCriterio() {
         return rbTempo.isSelected() ? Criterio.MENOR_TEMPO : Criterio.MENOR_DISTANCIA;
     }
 
-    /** Usado ao recuperar o critério padrão do config.bin. */
+    /**
+     * Usado ao recuperar o critério padrão do config.bin.
+     *
+     * @param criterio critério a marcar
+     */
     public void setCriterio(Criterio criterio) {
         (criterio == Criterio.MENOR_TEMPO ? rbTempo : rbDistancia).setSelected(true);
     }
 
     /**
      * Seleciona origem e destino pelos ids (por exemplo, a última rota guardada no config.bin).
-     * Ids que não existem na rede importada são ignorados. Devolve true se os dois foram achados.
+     * Ids que não existem na rede importada são ignorados.
+     *
+     * @param origemId  id da origem
+     * @param destinoId id do destino
+     * @return {@code true} se os dois foram achados
      */
     public boolean selecionar(String origemId, String destinoId) {
         boolean achouOrigem = selecionarNoCombo(comboOrigem, origemId);
         boolean achouDestino = selecionarNoCombo(comboDestino, destinoId);
         return achouOrigem && achouDestino;
+    }
+
+    /**
+     * Escolha feita pelo mapa: define onde o usuário está.
+     *
+     * @param id id do ponto
+     * @return {@code true} se o ponto está na lista
+     */
+    public boolean selecionarOrigem(String id) {
+        return selecionarNoCombo(comboOrigem, id);
+    }
+
+    /**
+     * Escolha feita pelo mapa: define para onde o usuário vai.
+     *
+     * @param id id do ponto
+     * @return {@code true} se o ponto está na lista
+     */
+    public boolean selecionarDestino(String id) {
+        return selecionarNoCombo(comboDestino, id);
+    }
+
+    /** Volta o destino para "Selecione um ponto…" (o mapa recomeça a escolha pela origem). */
+    public void limparDestino() {
+        comboDestino.setSelectedIndex(0);
+    }
+
+    /**
+     * Avisado sempre que origem ou destino mudam, pelo combo, pelo Inverter ou pelo mapa.
+     *
+     * @param ouvinte chamado a cada mudança
+     */
+    public void addSelecaoListener(Runnable ouvinte) {
+        comboOrigem.addItemListener(e -> ouvinte.run());
+        comboDestino.addItemListener(e -> ouvinte.run());
     }
 
     private static boolean selecionarNoCombo(JComboBox<PontoRede> combo, String id) {
@@ -210,10 +293,20 @@ public class PainelSelecaoRota extends JPanel {
         return false;
     }
 
+    /**
+     * Avisa quando o usuário clica em Calcular rota.
+     *
+     * @param l ouvinte do clique
+     */
     public void addCalcularListener(ActionListener l) {
         btnCalcular.addActionListener(l);
     }
 
+    /**
+     * Botão Calcular, para a janela torná-lo o botão padrão.
+     *
+     * @return o botão
+     */
     public JButton getBotaoCalcular() { return btnCalcular; }
 
     @Override

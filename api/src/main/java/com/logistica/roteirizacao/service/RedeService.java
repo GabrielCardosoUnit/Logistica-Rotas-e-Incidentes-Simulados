@@ -32,6 +32,14 @@ public class RedeService {
     private final EstadoRedeRepository estadoRedeRepository;
     private final ImportadorRedeCsv importador = new ImportadorRedeCsv();
 
+    /**
+     * Cria o serviço.
+     *
+     * @param pontoRepository       acesso aos pontos
+     * @param viaRepository         acesso às vias
+     * @param incidenteRepository   acesso aos incidentes
+     * @param estadoRedeRepository  acesso à versão da rede
+     */
     public RedeService(PontoRepository pontoRepository, ViaRepository viaRepository,
                        IncidenteRepository incidenteRepository, EstadoRedeRepository estadoRedeRepository) {
         this.pontoRepository = pontoRepository;
@@ -44,6 +52,11 @@ public class RedeService {
      * Substitui a rede atual pela dos CSVs. Incidentes da rede anterior são
      * apagados junto (as vias podem nem existir mais). Rotas já calculadas
      * continuam no histórico, pois guardam só ids e a versão da rede.
+     *
+     * @param pontosCsv conteúdo de pontos.csv
+     * @param viasCsv   conteúdo de vias.csv
+     * @return quantidades importadas, nova versão e linhas rejeitadas
+     * @throws com.logistica.roteirizacao.exception.ValidacaoException se um cabeçalho estiver errado ou nada for importado
      */
     @Transactional
     public ImportacaoResponse importar(InputStream pontosCsv, InputStream viasCsv) {
@@ -77,6 +90,11 @@ public class RedeService {
         throw new ValidacaoException(campo, "Nenhuma linha válida em " + arquivo + "." + detalhe);
     }
 
+    /**
+     * Versão atual da rede.
+     *
+     * @return a versão; 0 se a rede nunca foi importada
+     */
     @Transactional(readOnly = true)
     public int versaoAtual() {
         return estadoRedeRepository.findById(EstadoRede.ID_UNICO)
@@ -84,7 +102,12 @@ public class RedeService {
                 .orElse(0);
     }
 
-    /** Chamado dentro da transação de quem altera a rede (importação ou incidente). */
+    /**
+     * Sobe a versão da rede. Chamado dentro da transação de quem altera a rede
+     * (importação, incidente ou desbloqueio).
+     *
+     * @return a nova versão
+     */
     @Transactional
     public int incrementarVersao() {
         EstadoRede estado = estadoRedeRepository.findById(EstadoRede.ID_UNICO)
@@ -94,7 +117,11 @@ public class RedeService {
         return versao;
     }
 
-    /** Grafo com a rede atual; vias desabilitadas ou com incidente ativo entram bloqueadas. */
+    /**
+     * Grafo com a rede atual; vias desabilitadas ou com incidente ativo entram bloqueadas.
+     *
+     * @return o grafo montado a partir do banco
+     */
     @Transactional(readOnly = true)
     public Grafo montarGrafo() {
         Grafo grafo = new Grafo();

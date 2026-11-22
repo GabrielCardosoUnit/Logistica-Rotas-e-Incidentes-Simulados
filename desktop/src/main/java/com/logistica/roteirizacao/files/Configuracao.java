@@ -18,9 +18,13 @@ public final class Configuracao {
     private final String urlApi;
 
     /**
+     * Cria a configuração.
+     *
+     * @param criterioPadrao  critério marcado ao abrir a tela
      * @param ultimaOrigemId  id do ponto ou "" quando nenhuma rota foi calculada ainda
      * @param ultimoDestinoId id do ponto ou "" quando nenhuma rota foi calculada ainda
      * @param urlApi          endereço http(s) da API
+     * @throws IllegalArgumentException se a URL não começar com http:// ou https://
      */
     public Configuracao(Criterio criterioPadrao, String ultimaOrigemId, String ultimoDestinoId, String urlApi) {
         this.criterioPadrao = Objects.requireNonNull(criterioPadrao, "critério padrão é obrigatório.");
@@ -33,27 +37,69 @@ public final class Configuracao {
         this.urlApi = url;
     }
 
-    /** Valores usados na primeira execução, quando ainda não existe config.bin. */
+    /**
+     * Valores usados na primeira execução, quando ainda não existe config.bin.
+     *
+     * @return a configuração padrão
+     */
     public static Configuracao padrao() {
         return new Configuracao(Criterio.MENOR_DISTANCIA, "", "", ClienteApiHttp.URL_PADRAO);
     }
 
-    /** Guarda a rota que o usuário acabou de pedir (origem, destino e critério). */
+    /**
+     * Guarda a rota que o usuário acabou de pedir (origem, destino e critério).
+     *
+     * @param origemId  ponto de partida
+     * @param destinoId ponto de chegada
+     * @param criterio  critério usado, que vira o novo padrão
+     * @return nova configuração (esta não muda)
+     */
     public Configuracao comUltimaRota(String origemId, String destinoId, Criterio criterio) {
         return new Configuracao(criterio, origemId, destinoId, urlApi);
     }
 
+    /**
+     * Troca o endereço da API.
+     *
+     * @param novaUrl endereço http(s) da API
+     * @return nova configuração (esta não muda)
+     */
     public Configuracao comUrlApi(String novaUrl) {
         return new Configuracao(criterioPadrao, ultimaOrigemId, ultimoDestinoId, novaUrl);
     }
 
+    /**
+     * Diz se há uma rota guardada para restaurar ao abrir.
+     *
+     * @return {@code true} se origem e destino estão preenchidos
+     */
     public boolean temUltimaRota() {
         return !ultimaOrigemId.isEmpty() && !ultimoDestinoId.isEmpty();
     }
 
+    /**
+     * Critério marcado ao abrir a tela.
+     *
+     * @return o critério
+     */
     public Criterio getCriterioPadrao() { return criterioPadrao; }
+    /**
+     * Origem da última rota.
+     *
+     * @return id do ponto, ou ""
+     */
     public String getUltimaOrigemId() { return ultimaOrigemId; }
+    /**
+     * Destino da última rota.
+     *
+     * @return id do ponto, ou ""
+     */
     public String getUltimoDestinoId() { return ultimoDestinoId; }
+    /**
+     * Endereço da API.
+     *
+     * @return a URL
+     */
     public String getUrlApi() { return urlApi; }
 
     @Override

@@ -27,11 +27,27 @@ import com.logistica.roteirizacao.model.Via;
  */
 public class ImportadorRedeCsv {
 
+    /** Nome do arquivo de pontos, usado nas linhas rejeitadas. */
     public static final String ARQUIVO_PONTOS = "pontos.csv";
+    /** Nome do arquivo de vias, usado nas linhas rejeitadas. */
     public static final String ARQUIVO_VIAS = "vias.csv";
+    /** Cabeçalho obrigatório de pontos.csv. */
     public static final String CABECALHO_PONTOS = "id,nome,latitude,longitude";
+    /** Cabeçalho obrigatório de vias.csv. */
     public static final String CABECALHO_VIAS = "id,origem,destino,distanciaKm,tempoMin,habilitada";
 
+    /** Cria o importador. Não guarda estado entre leituras. */
+    public ImportadorRedeCsv() {
+    }
+
+    /**
+     * Lê os dois CSVs. As vias só podem referenciar pontos aceitos.
+     *
+     * @param pontosCsv conteúdo de pontos.csv
+     * @param viasCsv   conteúdo de vias.csv
+     * @return pontos e vias válidos, mais as linhas rejeitadas
+     * @throws com.logistica.roteirizacao.exception.ValidacaoException se um arquivo faltar, estiver vazio ou com cabeçalho errado
+     */
     public ResultadoImportacao ler(InputStream pontosCsv, InputStream viasCsv) {
         List<LinhaRejeitada> rejeitadas = new ArrayList<>();
         Map<String, Ponto> pontos = lerPontos(pontosCsv, rejeitadas);

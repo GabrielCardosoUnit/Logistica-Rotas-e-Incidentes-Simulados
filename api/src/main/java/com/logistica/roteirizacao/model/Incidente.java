@@ -14,7 +14,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** Bloqueio de uma via. Enquanto ativo, a via não entra em nenhum cálculo. */
+/**
+ * Bloqueio de uma via. Enquanto ativo, a via não entra em nenhum cálculo.
+ * Ao ser encerrado (desbloqueio), continua no banco como histórico.
+ */
 @Entity
 @Table(name = "incidente")
 public class Incidente {
@@ -36,10 +39,22 @@ public class Incidente {
     @Column(nullable = false)
     private boolean ativo;
 
+    /** Quando a via foi desbloqueada; null enquanto o incidente está ativo. */
+    @Column(name = "encerrado_em")
+    private Instant encerradoEm;
+
     /** Exigido pelo JPA. Não usar no código da aplicação. */
     protected Incidente() {
     }
 
+    /**
+     * Registra um incidente ativo.
+     *
+     * @param via          via bloqueada
+     * @param descricao    motivo do bloqueio
+     * @param registradoEm instante do registro
+     * @throws IllegalArgumentException se a descrição estiver vazia
+     */
     public Incidente(Via via, String descricao, Instant registradoEm) {
         this.via = Objects.requireNonNull(via, "via do incidente é obrigatória.");
         if (descricao == null || descricao.isBlank()) {
@@ -52,24 +67,73 @@ public class Incidente {
         this.ativo = true;
     }
 
+    /**
+     * Identificador gerado pelo banco.
+     *
+     * @return o id, ou {@code null} antes de gravar
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Via bloqueada.
+     *
+     * @return a via
+     */
     public Via getVia() {
         return via;
     }
 
+    /**
+     * Motivo do bloqueio.
+     *
+     * @return a descrição
+     */
     public String getDescricao() {
         return descricao;
     }
 
+    /**
+     * Quando o incidente foi registrado.
+     *
+     * @return o instante, em microssegundos
+     */
     public Instant getRegistradoEm() {
         return registradoEm;
     }
 
+    /**
+     * Diz se o incidente ainda bloqueia a via.
+     *
+     * @return {@code true} enquanto não for encerrado
+     */
     public boolean isAtivo() {
         return ativo;
+    }
+
+    /**
+     * Quando o incidente foi encerrado.
+     *
+     * @return o instante, ou {@code null} se ainda ativo
+     */
+    public Instant getEncerradoEm() {
+        return encerradoEm;
+    }
+
+    /**
+     * Desbloqueia a via: o incidente deixa de valer nos cálculos.
+     *
+     * @param instante momento do encerramento
+     * @throws IllegalStateException se o incidente já estava encerrado
+     */
+    public void encerrar(Instant instante) {
+        if (!ativo) {
+            throw new IllegalStateException("incidente " + id + " já foi encerrado.");
+        }
+        Objects.requireNonNull(instante, "instante do encerramento é obrigatório.");
+        this.ativo = false;
+        this.encerradoEm = instante.truncatedTo(ChronoUnit.MICROS);
     }
 
     @Override

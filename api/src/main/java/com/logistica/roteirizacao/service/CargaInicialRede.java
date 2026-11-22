@@ -31,6 +31,13 @@ public class CargaInicialRede implements ApplicationRunner {
     private final File arquivoPontos;
     private final File arquivoVias;
 
+    /**
+     * Cria a carga inicial.
+     *
+     * @param redeService   serviço que importa a rede
+     * @param caminhoPontos caminho de pontos.csv ({@code rede.carga-inicial.pontos})
+     * @param caminhoVias   caminho de vias.csv ({@code rede.carga-inicial.vias})
+     */
     public CargaInicialRede(RedeService redeService,
                             @Value("${rede.carga-inicial.pontos}") String caminhoPontos,
                             @Value("${rede.carga-inicial.vias}") String caminhoVias) {

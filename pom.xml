@@ -27,4 +27,33 @@
         <module>api</module>
         <module>desktop</module>
     </modules>
+
+    <build>
+        <plugins>
+            <!--
+                Javadoc. Por módulo:  ./mvnw javadoc:javadoc        (api/target/reports/apidocs)
+                Tudo junto:           ./mvnw javadoc:aggregate      (target/reports/apidocs)
+                A versão vem do spring-boot-starter-parent.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <docencoding>UTF-8</docencoding>
+                    <charset>UTF-8</charset>
+                    <locale>pt_BR</locale>
+                    <doctitle>Roteirização Logística ${project.version}</doctitle>
+                    <windowtitle>Roteirização Logística</windowtitle>
+                    <!-- Verifica HTML, referências, sintaxe e cobra comentário em todo membro público/protegido. -->
+                    <doclint>all</doclint>
+                    <additionalOptions>
+                        <additionalOption>-Xmaxwarns</additionalOption>
+                        <additionalOption>10000</additionalOption>
+                    </additionalOptions>
+                    <failOnWarnings>false</failOnWarnings>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

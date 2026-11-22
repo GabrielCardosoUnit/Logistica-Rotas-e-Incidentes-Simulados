@@ -26,7 +26,9 @@ import com.logistica.roteirizacao.client.dto.RotaResultado;
 /** {@link ClienteApi} sobre HTTP, com {@link HttpClient} do Java e JSON via Jackson. */
 public class ClienteApiHttp implements ClienteApi {
 
+    /** Endereço usado quando nenhum outro é informado. */
     public static final String URL_PADRAO = "http://localhost:8080";
+    /** Tempo máximo de espera por requisição, quando nenhum outro é informado. */
     public static final Duration TEMPO_LIMITE_PADRAO = Duration.ofSeconds(10);
 
     private static final String JSON = "application/json";
@@ -37,15 +39,23 @@ public class ClienteApiHttp implements ClienteApi {
     private final HttpClient http;
     private final ObjectMapper json;
 
+    /** Cliente para {@value #URL_PADRAO}, com o tempo limite padrão. */
     public ClienteApiHttp() {
         this(URL_PADRAO);
     }
 
+    /**
+     * Cliente para o endereço informado, com o tempo limite padrão.
+     *
+     * @param urlBase endereço http(s) da API
+     */
     public ClienteApiHttp(String urlBase) {
         this(urlBase, TEMPO_LIMITE_PADRAO);
     }
 
     /**
+     * Cliente para o endereço informado.
+     *
      * @param urlBase     endereço da API, por exemplo {@value #URL_PADRAO}
      * @param tempoLimite tempo máximo de espera por requisição
      */
@@ -61,6 +71,11 @@ public class ClienteApiHttp implements ClienteApi {
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
+    /**
+     * Endereço da API usado nas requisições.
+     *
+     * @return a URL base
+     */
     public URI getUrlBase() {
         return urlBase;
     }
@@ -108,6 +123,14 @@ public class ClienteApiHttp implements ClienteApi {
         corpo.put("viaId", viaId);
         corpo.put("descricao", descricao);
         return enviar(postJson("/incidentes", corpo), IncidenteResultado.class);
+    }
+
+    @Override
+    public IncidenteResultado encerrarIncidente(long incidenteId) throws ClienteApiException {
+        HttpRequest pedido = requisicao("/incidentes/" + incidenteId + "/encerramento")
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+        return enviar(pedido, IncidenteResultado.class);
     }
 
     private HttpRequest postJson(String caminho, Map<String, Object> corpo) throws ClienteApiException {

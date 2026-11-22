@@ -27,9 +27,13 @@ public final class TarefaEmSegundoPlano {
     }
 
     /**
+     * Roda a tarefa num {@link SwingWorker} e entrega o resultado na EDT.
+     *
+     * @param <T>        tipo do resultado
      * @param tarefa     roda em segundo plano; não pode tocar em componentes Swing
      * @param aoConcluir recebe o resultado, na EDT
      * @param aoFalhar   recebe a mensagem de erro já pronta para o usuário, na EDT
+     * @return o worker já iniciado
      */
     public static <T> SwingWorker<T, Void> executar(Callable<T> tarefa,
                                                      Consumer<T> aoConcluir,

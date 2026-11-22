@@ -3,6 +3,7 @@ package com.logistica.roteirizacao.ui;
 import com.logistica.roteirizacao.client.dto.RotaResultado;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -21,6 +22,8 @@ import javax.swing.JTextArea;
 /**
  * Seção 3: mostra o resultado do cálculo (rota passo a passo, totais com unidade, status e
  * mensagem de "sem caminho"). O status aparece em TEXTO, e não só em cor.
+ *
+ * @serial exclude
  */
 public class PainelResultado extends JPanel {
 
@@ -28,14 +31,15 @@ public class PainelResultado extends JPanel {
     private final JLabel lblTotais = new JLabel(" ");
     private final JLabel lblDetalhe = new JLabel(" ");
     private final JLabel lblVias = new JLabel(" ");
-    private final JTextArea txtMensagem = new JTextArea(2, 40);
+    private final JTextArea txtMensagem = new JTextArea(2, 30);
     private final DefaultListModel<String> passos = new DefaultListModel<>();
     private final JList<String> listaPassos = new JList<>(passos);
     private final JButton btnExportar = new JButton("Exportar CSV…");
 
+    /** Monta o painel vazio, com o botão Exportar desabilitado. */
     public PainelResultado() {
         setBorder(BorderFactory.createTitledBorder("3. Resultado"));
-        setLayout(new BorderLayout(0, 6));
+        setLayout(new BorderLayout(12, 0));
 
         lblStatus.setFont(lblStatus.getFont().deriveFont(Font.BOLD, 15f));
         lblTotais.setFont(lblTotais.getFont().deriveFont(Font.BOLD, 13f));
@@ -61,14 +65,22 @@ public class PainelResultado extends JPanel {
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         acoes.add(btnExportar);
 
-        JPanel rodape = new JPanel(new BorderLayout());
+        JPanel rodape = new JPanel(new BorderLayout(0, 4));
         rodape.add(lblVias, BorderLayout.NORTH);
         rodape.add(txtMensagem, BorderLayout.CENTER);
         rodape.add(acoes, BorderLayout.SOUTH);
 
-        add(topo, BorderLayout.NORTH);
+        // Faixa abaixo do mapa: resumo (status, totais, vias, exportar) à esquerda e o
+        // percurso ponto a ponto à direita.
+        JPanel resumo = new JPanel(new BorderLayout(0, 6));
+        resumo.add(topo, BorderLayout.NORTH);
+        resumo.add(rodape, BorderLayout.CENTER);
+        resumo.setPreferredSize(new Dimension(430, 1));
+
+        rolagem.setPreferredSize(new Dimension(260, 150));
+        add(resumo, BorderLayout.WEST);
         add(rolagem, BorderLayout.CENTER);
-        add(rodape, BorderLayout.SOUTH);
+        setMinimumSize(new Dimension(0, 170));
         limpar();
     }
 
@@ -84,23 +96,38 @@ public class PainelResultado extends JPanel {
         btnExportar.setEnabled(false);
     }
 
-    /** O botão Exportar só fica ativo quando há uma rota com caminho na tela. */
+    /**
+     * O botão Exportar só fica ativo quando há uma rota com caminho na tela.
+     *
+     * @param exportavel {@code true} para liberar o botão
+     */
     public void setExportavel(boolean exportavel) {
         btnExportar.setEnabled(exportavel);
     }
 
+    /**
+     * Avisa quando o usuário clica em Exportar CSV.
+     *
+     * @param l ouvinte do clique
+     */
     public void addExportarListener(ActionListener l) {
         btnExportar.addActionListener(l);
     }
 
     JButton getBotaoExportar() { return btnExportar; }
 
+    /** Mostra que o cálculo está em andamento. */
     public void mostrarCalculando() {
         limpar();
         lblStatus.setText("Calculando…");
     }
 
-    /** @param pontosPorId usado para trocar o id pelo nome do local (se faltar, mostra só o id) */
+    /**
+     * Mostra a rota (ou o aviso de sem caminho).
+     *
+     * @param r           rota devolvida pela API
+     * @param pontosPorId usado para trocar o id pelo nome do local (se faltar, mostra só o id)
+     */
     public void mostrar(RotaResultado r, Map<String, PontoRede> pontosPorId) {
         limpar();
         lblDetalhe.setText(r.criterio().getDescricao() + "  |  rede versão " + r.versaoRede()

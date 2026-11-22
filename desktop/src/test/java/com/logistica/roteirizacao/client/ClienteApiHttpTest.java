@@ -255,6 +255,37 @@ class ClienteApiHttpTest {
     }
 
     @Test
+    void encerrarIncidenteFazPostNoEncerramentoSemCorpo() throws Exception {
+        responder("/incidentes/7/encerramento", 200, """
+                {"id":7,"viaId":"V24","descricao":"Alagamento simulado","ativo":false,
+                 "registradoEm":"2026-10-26T10:16:00-03:00","encerradoEm":"2026-10-26T10:30:00-03:00",
+                 "versaoRede":3}
+                """);
+
+        IncidenteResultado incidente = cliente.encerrarIncidente(7);
+
+        assertEquals("POST", metodoRecebido.get());
+        assertEquals("", corpoRecebido.get());
+        assertEquals(7, incidente.id());
+        assertEquals("V24", incidente.viaId());
+        assertFalse(incidente.ativo());
+        assertEquals(3, incidente.versaoRede());
+    }
+
+    @Test
+    void encerrarIncidenteJaEncerradoTrazOStatus409() {
+        responder("/incidentes/7/encerramento", 409, """
+                {"status":409,"erro":"CONFLITO","campo":"id",
+                 "mensagem":"O incidente 7 já foi encerrado; a via V24 já está desbloqueada."}
+                """);
+
+        ClienteApiException erro = assertThrows(ClienteApiException.class, () -> cliente.encerrarIncidente(7));
+
+        assertEquals(409, erro.getStatusHttp().orElseThrow());
+        assertEquals("O incidente 7 já foi encerrado; a via V24 já está desbloqueada.", erro.getMessage());
+    }
+
+    @Test
     void urlInvalidaEhRecusadaNaCriacao() {
         assertThrows(IllegalArgumentException.class, () -> new ClienteApiHttp("localhost:8080"));
     }
